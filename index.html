@@ -19,7 +19,7 @@
 <h1 class="text-3xl font-bold">KUROZENAKU</h1>
 
 <button @click="menuOpen = true"
-class="bg-white/10 px-3 py-2 rounded hover:bg-white/20 transition">
+class="bg-white/10 px-3 py-2 rounded hover:bg-white/20 active:scale-95 transition">
 ☰ Menu
 </button>
 </div>
@@ -27,7 +27,7 @@ class="bg-white/10 px-3 py-2 rounded hover:bg-white/20 transition">
 <!-- SEARCH + FILTER -->
 <div class="flex gap-2 mb-4">
 <button @click="filterOpen = true"
-class="bg-white/10 px-3 py-2 rounded hover:bg-white/20 transition">
+class="bg-white/10 px-3 py-2 rounded hover:bg-white/20 active:scale-95 transition">
 ☰
 </button>
 
@@ -69,32 +69,24 @@ class="mb-4 bg-white/10 px-3 py-1 rounded">Close</button>
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 
 <template x-for="p in filteredProducts()" :key="p.id">
-<div class="bg-white/10 p-3 rounded relative">
+<div class="bg-white/10 p-3 rounded">
 
 <img :src="p.image" class="h-40 w-full object-contain">
 
 <h2 x-text="p.name"></h2>
 <p>₹<span x-text="p.price"></span></p>
 
-<!-- STOCK -->
 <p class="text-xs">
 <span x-show="p.stock > 1" x-text="p.stock + ' left'"></span>
 <span x-show="p.stock === 1">Only 1 left</span>
 <span x-show="p.stock === 0">Sold Out</span>
 </p>
 
-<!-- RESERVED BADGE -->
-<p x-show="p.reserved" class="text-yellow-400 text-xs mt-1">
-Reserved
-</p>
-
-<!-- CLAIM BUTTON -->
+<!-- BUTTON -->
 <button 
 @click="claimProduct(p)" 
 :disabled="p.stock===0 || p.reserved"
-class="w-full mt-2 py-2 rounded transition
-bg-green-500 hover:bg-green-400 active:scale-95
-disabled:opacity-50">
+class="w-full mt-2 py-2 rounded bg-green-500 hover:bg-green-400 active:scale-95 transition disabled:opacity-50">
 
 <span x-show="!p.reserved">Claim</span>
 <span x-show="p.reserved">Reserved</span>
@@ -128,7 +120,11 @@ projectId:"kurozenaku-gundam-store"
 });
 
 firebase.firestore().collection("products").onSnapshot(s=>{
-this.products = s.docs.map(d=>({id:d.id,...d.data(), reserved:false}));
+this.products = s.docs.map(d=>({
+id:d.id,
+...d.data(),
+reserved:false
+}));
 });
 
 },
@@ -142,12 +138,12 @@ return this.products.filter(p=>
 
 async claimProduct(p){
 
-try{
+if(p.stock <= 0 || p.reserved) return;
 
-if(p.stock <= 0) return;
-
-// 🔥 UI instant feedback
+// ✅ instant UI feedback
 p.reserved = true;
+
+try{
 
 // create claim
 const claimRef = await firebase.firestore().collection("claims").add({
@@ -163,19 +159,24 @@ await firebase.firestore().collection("products").doc(p.id).update({
 stock: p.stock - 1
 });
 
-// WhatsApp
+// WhatsApp open
 setTimeout(()=>{
-const phone = "91XXXXXXXXXX";
+const phone = "91XXXXXXXXXX"; // 🔥 replace
 
-const msg = `Claim:\n${p.name}\nID:${claimRef.id}`;
-
+const msg = `🛒 Claim\n${p.name}\nID:${claimRef.id}`;
 window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`);
 },400);
 
 }catch(e){
-console.error(e);
-p.reserved = false; // rollback UI if failed
-alert("Error");
+
+console.error("CLAIM FAILED:", e);
+
+// ❌ rollback UI if failed
+p.reserved = false;
+
+// show minimal feedback (not ugly alert)
+console.log("Firestore blocked write → fix rules");
+
 }
 
 }
