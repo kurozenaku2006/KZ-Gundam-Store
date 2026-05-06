@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Kurozenaku Store</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+</head>
+
+<body class="bg-gradient-to-b from-black via-gray-900 to-black text-white min-h-screen">
+
+<div x-data="app()" x-init="init()" class="p-6 max-w-7xl mx-auto">
+
+<!-- HEADER -->
+<div class="flex justify-between items-center mb-6">
+<h1 class="text-3xl font-bold">KUROZENAKU</h1>
+<button @click="menuOpen=true" class="bg-white/10 px-3 py-2 rounded">☰ Menu</button>
+</div>
+
+<!-- SEARCH + FILTER -->
+<div class="flex gap-2 mb-4">
+<button @click="filterOpen=true" class="bg-white/10 px-3 rounded">☰</button>
+<input x-model="search" placeholder="Search Gundam kits..." class="flex-1 p-2 text-black rounded"/>
+</div>
+
+<!-- ================= FILTER DRAWER ================= -->
+<div x-show="filterOpen"
+     x-transition.opacity
+     class="fixed inset-0 bg-black/60 z-40"
+     @click="filterOpen=false"></div>
+
+<div x-show="filterOpen"
+     x-transition:enter="transition transform duration-300"
+     x-transition:enter-start="-translate-x-full"
+     x-transition:enter-end="translate-x-0"
+     x-transition:leave="transition transform duration-300"
+     x-transition:leave-start="translate-x-0"
+     x-transition:leave-end="-translate-x-full"
+     class="fixed top-0 left-0 h-full w-64 bg-gray-900 z-50 p-4 shadow-xl">
+
+<h2 class="mb-4 text-lg font-semibold">Category</h2>
+
+<template x-for="c in ['ALL','HG','MG','RG','PG','SD']">
+<button @click="category=c; filterOpen=false"
+class="block w-full text-left mb-2 bg-white/10 px-3 py-2 rounded hover:bg-white/20"
+x-text="c"></button>
+</template>
+
+<button @click="filterOpen=false"
+class="mt-4 w-full bg-red-500 py-2 rounded">Close</button>
+
+</div>
+
+<!-- ================= MENU DRAWER ================= -->
+<div x-show="menuOpen"
+     x-transition.opacity
+     class="fixed inset-0 bg-black/60 z-40"
+     @click="menuOpen=false"></div>
+
+<div x-show="menuOpen"
+     x-transition:enter="transition transform duration-300"
+     x-transition:enter-start="translate-x-full"
+     x-transition:enter-end="translate-x-0"
+     x-transition:leave="transition transform duration-300"
+     x-transition:leave-start="translate-x-0"
+     x-transition:leave-end="translate-x-full"
+     class="fixed top-0 right-0 h-full w-72 bg-gradient-to-b from-gray-900 to-blue-950 z-50 p-5 shadow-xl">
+
+<div class="flex justify-between mb-4">
+<button @click="menuOpen=false" class="bg-white/10 px-3 py-1 rounded">✕</button>
+<h2>Menu</h2>
+</div>
+
+<button class="w-full mb-2 bg-white/10 py-2 rounded">🛍 Shop</button>
+
+<p class="mt-6 text-sm opacity-70">
+After claiming, you’ll be contacted on WhatsApp.
+</p>
+
+</div>
+
+<!-- ================= PRODUCTS ================= -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+<template x-for="p in filteredProducts()" :key="p.id">
+<div class="bg-white/10 p-3 rounded">
+
+<img :src="p.image" class="h-40 w-full object-contain">
+
+<h2 class="mt-2 font-semibold" x-text="p.name"></h2>
+<p>₹<span x-text="p.price"></span></p>
+
+<!-- STOCK -->
+<p class="text-xs mt-1">
+<span x-show="p.stock > 1" x-text="p.stock + ' left'"></span>
+<span x-show="p.stock === 1" class="text-yellow-400">Only 1 left</span>
+<span x-show="p.stock === 0" class="text-red-500">Sold Out</span>
+</p>
+
+<!-- CLAIM BUTTON -->
+<button 
+@click="claimProduct(p)" 
+:disabled="p.stock===0"
+class="bg-green-500 w-full mt-2 py-1 rounded disabled:opacity-50">
+Claim
+</button>
+
+</div>
+</template>
+
+</div>
+
+<!-- ================= SUCCESS POPUP ================= -->
+<div x-show="showSuccess"
+     x-transition.opacity
+     class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+
+  <div 
+    x-transition
+    class="bg-gray-900 p-6 rounded-xl w-80 text-center shadow-xl">
+
+    <h2 class="text-xl font-bold mb-3">✅ Claim Sent</h2>
+
+    <p class="text-sm opacity-80 mb-2">
+      <span x-text="lastClaim.name"></span>
+    </p>
+
+    <p class="text-xs opacity-60 mb-4">
+      ID: <span x-text="lastClaim.id"></span>
+    </p>
+
+    <p class="text-xs mb-4">
+      We’ll contact you on WhatsApp shortly.
+    </p>
+
+    <button 
+      @click="showSuccess=false"
+      class="bg-green-500 w-full py-2 rounded">
+      Done
+    </button>
+
+  </div>
+
+</div>
+
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+
+Alpine.data('app', () => ({
+
+menuOpen:false,
+filterOpen:false,
+
+products:[],
+search:'',
+category:'ALL',
+
+// ✅ popup state
+showSuccess:false,
+lastClaim:{ id:'', name:'' },
+
+init(){
+
+firebase.initializeApp({
+apiKey:"AIzaSyByLURDPjEbLepc3Wz3O1MAYYLXSeu04Zg",
+authDomain:"kurozenaku-gundam-store.firebaseapp.com",
+projectId:"kurozenaku-gundam-store"
+});
+
+firebase.firestore().collection("products").onSnapshot(s=>{
+this.products = s.docs.map(d=>({id:d.id,...d.data()}));
+});
+
+},
+
+filteredProducts(){
+return this.products.filter(p=>
+(p.name||'').toLowerCase().includes(this.search.toLowerCase()) &&
+(this.category==='ALL'||p.category===this.category)
+);
+},
+
+// 🔥 CLAIM SYSTEM WITH POPUP
+async claimProduct(p){
+
+if(p.stock <= 0){
+return;
+}
+
+// 1️⃣ create claim
+const claimRef = await firebase.firestore().collection("claims").add({
+productId: p.id,
+productName: p.name,
+price: p.price,
+status: "PENDING",
+createdAt: new Date()
+});
+
+// 2️⃣ reduce stock
+await firebase.firestore().collection("products").doc(p.id).update({
+stock: p.stock - 1,
+status: (p.stock - 1) <= 0 ? "SOLD_OUT" : "AVAILABLE"
+});
+
+// 3️⃣ show popup
+this.lastClaim = {
+id: claimRef.id,
+name: p.name
+};
+
+this.showSuccess = true;
+
+// 4️⃣ open WhatsApp (smooth delay)
+setTimeout(() => {
+const phone = "919359760115"; // 🔥 replace with your number
+
+const message = `🛒 *Kurozenaku Claim*
+
+📦 ${p.name}
+💰 ₹${p.price}
+🆔 ${claimRef.id}
+
+Please confirm availability.`;
+
+window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
+}, 500);
+
+}
+
+}))
+
+})
+</script>
+
+</body>
+</html>
