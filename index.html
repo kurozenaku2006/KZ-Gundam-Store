@@ -18,7 +18,7 @@
 <div class="flex justify-between items-center mb-6">
 <h1 class="text-3xl font-bold">KUROZENAKU</h1>
 
-<button @click="menuOpen = true"
+<button @click="menuOpen=true"
 class="bg-white/10 px-3 py-2 rounded hover:bg-white/20 active:scale-95 transition">
 ☰ Menu
 </button>
@@ -26,7 +26,7 @@ class="bg-white/10 px-3 py-2 rounded hover:bg-white/20 active:scale-95 transitio
 
 <!-- SEARCH + FILTER -->
 <div class="flex gap-2 mb-4">
-<button @click="filterOpen = true"
+<button @click="filterOpen=true"
 class="bg-white/10 px-3 py-2 rounded hover:bg-white/20 active:scale-95 transition">
 ☰
 </button>
@@ -35,7 +35,7 @@ class="bg-white/10 px-3 py-2 rounded hover:bg-white/20 active:scale-95 transitio
 class="flex-1 p-2 text-black rounded"/>
 </div>
 
-<!-- FILTER DRAWER -->
+<!-- FILTER -->
 <div x-show="filterOpen" class="fixed inset-0 bg-black/60" @click="filterOpen=false"></div>
 
 <div x-show="filterOpen"
@@ -52,7 +52,7 @@ class="block w-full mb-2 bg-white/10 p-2 rounded hover:bg-white/20">
 
 </div>
 
-<!-- MENU DRAWER -->
+<!-- MENU -->
 <div x-show="menuOpen" class="fixed inset-0 bg-black/60" @click="menuOpen=false"></div>
 
 <div x-show="menuOpen"
@@ -80,6 +80,11 @@ class="mb-4 bg-white/10 px-3 py-1 rounded">Close</button>
 <span x-show="p.stock > 1" x-text="p.stock + ' left'"></span>
 <span x-show="p.stock === 1">Only 1 left</span>
 <span x-show="p.stock === 0">Sold Out</span>
+</p>
+
+<!-- RESERVED TEXT -->
+<p x-show="p.reserved" class="text-yellow-400 text-xs mt-1">
+Reserved
 </p>
 
 <!-- BUTTON -->
@@ -119,11 +124,12 @@ authDomain:"kurozenaku-gundam-store.firebaseapp.com",
 projectId:"kurozenaku-gundam-store"
 });
 
+// 🔥 FIXED SNAPSHOT (keeps reserved)
 firebase.firestore().collection("products").onSnapshot(s=>{
 this.products = s.docs.map(d=>({
 id:d.id,
 ...d.data(),
-reserved:false
+reserved: d.data().reserved || false
 }));
 });
 
@@ -136,11 +142,12 @@ return this.products.filter(p=>
 );
 },
 
+// 🔥 FINAL CLAIM SYSTEM
 async claimProduct(p){
 
 if(p.stock <= 0 || p.reserved) return;
 
-// ✅ instant UI feedback
+// instant UI feedback
 p.reserved = true;
 
 try{
@@ -154,12 +161,13 @@ status: "PENDING",
 createdAt: new Date()
 });
 
-// reduce stock
+// 🔥 CRITICAL: persist reserved
 await firebase.firestore().collection("products").doc(p.id).update({
-stock: p.stock - 1
+stock: p.stock - 1,
+reserved: true
 });
 
-// WhatsApp open
+// WhatsApp
 setTimeout(()=>{
 const phone = "91XXXXXXXXXX"; // 🔥 replace
 
@@ -169,13 +177,10 @@ window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`);
 
 }catch(e){
 
-console.error("CLAIM FAILED:", e);
+console.error("CLAIM ERROR:", e);
 
-// ❌ rollback UI if failed
+// rollback UI
 p.reserved = false;
-
-// show minimal feedback (not ugly alert)
-console.log("Firestore blocked write → fix rules");
 
 }
 
