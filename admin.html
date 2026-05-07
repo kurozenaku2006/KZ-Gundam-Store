@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background: #0a0a0a;
+    }
+  </style>
+</head>
+
+<body class="text-white">
+
+  <div class="p-6 max-w-6xl mx-auto">
+
+    <h1 class="text-3xl font-bold mb-6">🛠 Admin Dashboard</h1>
+
+    <div id="claims" class="grid gap-4"></div>
+
+  </div>
+
+<script>
+  const API = "/api/claims";
+
+  async function loadClaims() {
+    const res = await fetch(API);
+    const data = await res.json();
+
+    const container = document.getElementById("claims");
+    container.innerHTML = "";
+
+    data.forEach(claim => {
+      const card = document.createElement("div");
+
+      card.className =
+        "bg-gray-900 p-4 rounded-lg flex justify-between items-center shadow";
+
+      card.innerHTML = `
+        <div>
+          <h2 class="text-lg font-bold">${claim.productName}</h2>
+          <p class="text-sm text-gray-400">
+            User: ${claim.userName} | Qty: ${claim.quantity} | ₹${claim.price}
+          </p>
+          <p class="text-xs mt-1">
+            Status: <span class="text-yellow-400">${claim.status}</span>
+          </p>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="updateStatus('${claim._id}', 'approved')"
+            class="px-3 py-1 bg-green-500 rounded hover:bg-green-600">
+            Approve
+          </button>
+
+          <button onclick="updateStatus('${claim._id}', 'rejected')"
+            class="px-3 py-1 bg-red-500 rounded hover:bg-red-600">
+            Reject
+          </button>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+  }
+
+  async function updateStatus(id, status) {
+    await fetch(`/api/claims/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ status })
+    });
+
+    loadClaims();
+  }
+
+  loadClaims();
+</script>
+
+</body>
+</html>
