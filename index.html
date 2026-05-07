@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Kurozenaku Store</title>
 
@@ -77,12 +78,6 @@
       transition:transform .3s ease;
     }
 
-    .admin-glow{
-      box-shadow:
-      0 0 15px rgba(34,211,238,.4),
-      0 0 30px rgba(16,185,129,.3);
-    }
-
   </style>
 
 </head>
@@ -110,29 +105,13 @@
 
     </div>
 
-    <div class="flex gap-3 items-center">
+    <button
+      @click="menuOpen = true"
+      class="glass px-5 py-3 rounded-2xl hover:bg-white/10 active:scale-95 transition-all duration-300">
 
-      <!-- ADMIN BUTTON -->
+      ☰ Menu
 
-      <button
-        @click="openAdminPrompt()"
-        class="glass admin-glow px-5 py-3 rounded-2xl hover:bg-white/10 active:scale-95 transition-all duration-300">
-
-        ⚙ Admin
-
-      </button>
-
-      <!-- MENU BUTTON -->
-
-      <button
-        @click="menuOpen = true"
-        class="glass px-5 py-3 rounded-2xl hover:bg-white/10 active:scale-95 transition-all duration-300">
-
-        ☰ Menu
-
-      </button>
-
-    </div>
+    </button>
 
   </div>
 
@@ -235,29 +214,39 @@
 
     <div class="space-y-3">
 
-      <button class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300">
+      <button
+        @click="menuOpen=false"
+        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300">
+
         🏠 Home
+
       </button>
 
-      <button class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300">
+      <button
+        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300">
+
         📦 Claims
+
       </button>
 
-      <button class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300">
+      <button
+        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300">
+
         ⭐ Wishlist
+
+      </button>
+
+      <!-- ADMIN BUTTON -->
+
+      <button
+        @click="openAdmin()"
+        class="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 p-4 rounded-2xl text-left font-bold hover:brightness-125 transition-all duration-300 shadow-[0_0_25px_rgba(20,184,166,.5)]">
+
+        ⚙ Admin Dashboard
+
       </button>
 
     </div>
-
-  </div>
-
-  <!-- FIRESTORE ERROR -->
-
-  <div
-    x-show="firestoreError"
-    class="glass border border-red-500/40 rounded-2xl p-4 mb-6 text-red-300">
-
-    ⚠ Firestore connection failed. Showing local demo products.
 
   </div>
 
@@ -318,15 +307,18 @@
 
           <span
             class="text-white text-xl font-black drop-shadow-[0_0_25px_rgba(255,255,255,1)] uppercase tracking-[0.2em]"
-
             x-text="
               pending[p.id]
-                ? '⏳ CLAIMING...'
+              ? 'CLAIMING...'
+              : (
+                p.claimed
+                ? 'CLAIMED'
                 : (
-                    p.stock <= 0
-                      ? 'RESERVED'
-                      : '⚡ CLAIM'
-                  )
+                  p.stock <= 0
+                  ? 'RESERVED'
+                  : '⚡ CLAIM'
+                )
+              )
             ">
           </span>
 
@@ -354,10 +346,6 @@ function app(){
 
     products:[],
     pending:{},
-
-    firestoreError:false,
-
-    adminPasscode:'KZ2026',
 
     demoProducts:[
 
@@ -399,10 +387,6 @@ function app(){
 
     ],
 
-    /* =====================================
-       INITIALIZE FIRESTORE
-    ===================================== */
-
     init(){
 
       try{
@@ -429,15 +413,16 @@ function app(){
           REALTIME PRODUCT SYNC
         */
 
-        db.collection('products').onSnapshot(
+        db.collection('products')
+        .onSnapshot(
 
-          (snapshot) => {
+          (snapshot)=>{
 
-            this.firestoreError = false;
-
-            this.products = snapshot.docs.map(doc => ({
+            this.products =
+            snapshot.docs.map(doc => ({
 
               id:doc.id,
+              claimed:false,
               ...doc.data()
 
             }));
@@ -450,11 +435,9 @@ function app(){
 
           },
 
-          (error) => {
+          (error)=>{
 
-            console.error('FIRESTORE ERROR:', error);
-
-            this.firestoreError = true;
+            console.error(error);
 
             this.products = this.demoProducts;
 
@@ -462,21 +445,17 @@ function app(){
 
         );
 
-      } catch(error){
+      }
 
-        console.error('INIT ERROR:', error);
+      catch(error){
 
-        this.firestoreError = true;
+        console.error(error);
 
         this.products = this.demoProducts;
 
       }
 
     },
-
-    /* =====================================
-       FILTER PRODUCTS
-    ===================================== */
 
     filteredProducts(){
 
@@ -488,27 +467,31 @@ function app(){
 
         &&
 
-        (this.category === 'ALL' || p.category === this.category)
+        (
+          this.category === 'ALL'
+          ||
+          p.category === this.category
+        )
 
       );
 
     },
 
-    /* =====================================
-       ADMIN LOGIN
-    ===================================== */
+    /*
+      ADMIN ACCESS
+    */
 
-    openAdminPrompt(){
+    openAdmin(){
 
-      const passcode = prompt('Enter Admin Passcode');
+      const pass = prompt('Enter Admin Passcode');
 
-      if(!passcode) return;
-
-      if(passcode === this.adminPasscode){
+      if(pass === 'KZADMIN'){
 
         window.location.href = 'admin.html';
 
-      } else {
+      }
+
+      else if(pass !== null){
 
         alert('Invalid Passcode');
 
@@ -516,69 +499,134 @@ function app(){
 
     },
 
-    /* =====================================
-       CLAIM PRODUCT
-    ===================================== */
+    /*
+      CLAIM PRODUCT
+    */
 
     async claimProduct(p){
 
-      if(p.stock <= 0 || this.pending[p.id]) return;
+      /*
+        PREVENT DOUBLE CLAIM
+      */
+
+      if(this.pending[p.id] || p.stock <= 0){
+
+        return;
+
+      }
+
+      /*
+        START CLAIMING
+      */
 
       this.pending[p.id] = true;
 
       try{
 
+        const db = firebase.firestore();
+
         /*
-          Send claim request to backend
+          PRODUCT REFERENCE
         */
 
-        const response = await fetch(
+        const productRef =
+        db.collection('products').doc(p.id);
 
-          'http://localhost:3000/claim',
+        /*
+          GET LIVE PRODUCT
+        */
 
-          {
+        const productDoc =
+        await productRef.get();
 
-            method:'POST',
+        /*
+          PRODUCT EXISTS CHECK
+        */
 
-            headers:{
-              'Content-Type':'application/json'
-            },
+        if(!productDoc.exists){
 
-            body:JSON.stringify({
-
-              productId:p.id,
-              productName:p.name,
-              price:p.price
-
-            })
-
-          }
-
-        );
-
-        const data = await response.json();
-
-        /* SUCCESS */
-
-        if(data.success){
-
-          console.log('CLAIM SUCCESS');
-
-        } else {
-
-          alert(data.message || 'Claim failed');
+          throw new Error('Product not found');
 
         }
 
-      } catch(error){
+        /*
+          CURRENT STOCK
+        */
 
-        console.error('CLAIM ERROR:', error);
+        const currentStock =
+        productDoc.data().stock || 0;
 
-        alert('Server connection failed');
+        /*
+          SOLD OUT CHECK
+        */
+
+        if(currentStock <= 0){
+
+          p.stock = 0;
+
+          this.pending[p.id] = false;
+
+          return;
+
+        }
+
+        /*
+          REDUCE STOCK
+        */
+
+        await productRef.update({
+
+          stock: currentStock - 1
+
+        });
+
+        /*
+          CREATE CLAIM
+        */
+
+        await db.collection('claims').add({
+
+          productId:p.id,
+
+          productName:p.name,
+
+          price:p.price,
+
+          status:'pending',
+
+          createdAt:new Date()
+
+        });
+
+        /*
+          UI UPDATE
+        */
+
+        p.stock = currentStock - 1;
+
+        p.claimed = true;
+
+        /*
+          CLAIMED ANIMATION
+        */
+
+        setTimeout(()=>{
+
+          this.pending[p.id] = false;
+
+        },1200);
 
       }
 
-      this.pending[p.id] = false;
+      catch(error){
+
+        console.error('CLAIM ERROR:', error);
+
+        alert('Claim failed');
+
+        this.pending[p.id] = false;
+
+      }
 
     }
 
