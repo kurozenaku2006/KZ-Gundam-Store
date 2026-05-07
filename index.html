@@ -15,6 +15,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
+    @keyframes pulse-glow {
+      0% { box-shadow: 0 0 5px rgba(20, 184, 166, 0.4); }
+      50% { box-shadow: 0 0 20px rgba(20, 184, 166, 0.7); }
+      100% { box-shadow: 0 0 5px rgba(20, 184, 166, 0.4); }
+    }
+
+    .glow-button {
+      animation: pulse-glow 2s infinite ease-in-out;
+    }
+
+    .glow-button:hover,
+    .glow-button:active {
+      filter: brightness(1.4);
+      box-shadow: 0 0 30px rgba(52, 211, 153, 1) !important;
+      transform: translateY(-2px);
+    }
     body {
       font-family: 'Inter', sans-serif;
       overflow-x: hidden;
@@ -147,11 +163,11 @@
   </div>
 
   <!-- FILTER -->
-  <div x-show="filterOpen" class="fixed inset-0 bg-black/70 z-40" @click="filterOpen=false"></div>
+  <div x-show="filterOpen" x-transition.opacity.opacity class="fixed inset-0 bg-black/70 z-40" @click="filterOpen=false"></div>
 
   <div
     x-show="filterOpen"
-    x-transition
+    x-transition.opacity
     class="fixed top-0 left-0 h-full w-72 glass z-50 border-r border-white/10 p-6">
 
     <h2 class="text-2xl font-bold mb-6">Categories</h2>
@@ -167,11 +183,11 @@
   </div>
 
   <!-- MENU -->
-  <div x-show="menuOpen" class="fixed inset-0 bg-black/70 z-40" @click="menuOpen=false"></div>
+  <div x-show="menuOpen" x-transition.opacity.opacity class="fixed inset-0 bg-black/70 z-40" @click="menuOpen=false"></div>
 
   <div
     x-show="menuOpen"
-    x-transition
+    x-transition.opacity
     class="fixed top-0 right-0 h-full w-80 glass z-50 border-l border-white/10 p-6">
 
     <button
@@ -229,14 +245,9 @@
         <button
           @click="claimProduct(p)"
           :disabled="pending[p.id]"
-          class="neon-button w-full py-3 rounded-2xl font-semibold
-          bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-500
-          hover:from-cyan-400 hover:via-blue-400 hover:to-emerald-400
-          shadow-[0_0_30px_rgba(59,130,246,0.25)]
-          hover:shadow-[0_0_40px_rgba(59,130,246,0.45)]
-          hover:-translate-y-1 active:scale-95 transition-all duration-300 disabled:opacity-50">
+          class="glow-button relative bg-gradient-to-r from-cyan-500 to-emerald-500 px-6 py-4 rounded-2xl text-white font-black uppercase tracking-wider shadow-[0_0_15px_rgba(20,184,166,0.5)] transition-all duration-300 ease-in-out hover:shadow-[0_0_25px_rgba(20,184,166,0.8)] hover:brightness-125 hover:scale-105 active:scale-95 w-full text-lg cursor-pointer disabled:opacity-60 disabled:shadow-none">
 
-          <span x-text="pending[p.id] ? '⏳ Claiming...' : (p.reserved ? 'Reserved' : 'Claim')"></span>
+          <span class="text-white text-xl font-black drop-shadow-[0_0_25px_rgba(255,255,255,1)] uppercase tracking-[0.2em]" x-text="pending[p.id] ? '⏳ CLAIMING...' : (p.reserved ? 'RESERVED' : '⚡ CLAIM')"></span>
 
         </button>
 
@@ -292,7 +303,7 @@ return this.products.filter(p=>
 
 async claimProduct(p){
 
-if(p.stock <= 0 || this.pending[p.id]) return;
+if(p.stock <= 0 || this.pending[p.id] || p.reserved) return;
 
 this.pending[p.id] = true;
 
@@ -308,10 +319,11 @@ createdAt:new Date()
 
 await firebase.firestore().collection("products").doc(p.id).update({
 stock:p.stock - 1,
-reserved:true
+reserved:(p.stock - 1) <= 0
 });
 
-p.reserved = true;
+p.stock = p.stock - 1;
+p.reserved = p.stock <= 0;
 
 setTimeout(()=>{
 const phone = "91XXXXXXXXXX";
