@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
   <title>KUROZENAKU ADMIN</title>
@@ -70,7 +70,7 @@
       0 0 20px rgba(16,185,129,.5);
     }
 
-    input, select{
+    input,select{
       outline:none;
     }
 
@@ -189,47 +189,45 @@
 
   </div>
 
-  <!-- TOP ANALYTICS -->
+  <!-- ANALYTICS -->
 
   <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
 
-    <div class="glass rounded-3xl p-5 glow card-hover">
+    <div class="glass rounded-3xl p-5 glow">
       <p class="text-gray-400 text-sm">TOTAL CLAIMS</p>
       <h2 class="text-3xl font-black mt-2" x-text="claims.length"></h2>
     </div>
 
-    <div class="glass rounded-3xl p-5 glow card-hover">
+    <div class="glass rounded-3xl p-5 glow">
       <p class="text-gray-400 text-sm">PENDING</p>
       <h2 class="text-3xl font-black mt-2 text-yellow-300" x-text="pendingClaims().length"></h2>
     </div>
 
-    <div class="glass rounded-3xl p-5 glow card-hover">
+    <div class="glass rounded-3xl p-5 glow">
       <p class="text-gray-400 text-sm">APPROVED</p>
       <h2 class="text-3xl font-black mt-2 text-emerald-300" x-text="approvedClaims().length"></h2>
     </div>
 
-    <div class="glass rounded-3xl p-5 glow card-hover">
+    <div class="glass rounded-3xl p-5 glow">
       <p class="text-gray-400 text-sm">REJECTED</p>
       <h2 class="text-3xl font-black mt-2 text-red-300" x-text="rejectedClaims().length"></h2>
     </div>
 
-    <div class="glass rounded-3xl p-5 glow card-hover">
+    <div class="glass rounded-3xl p-5 glow">
       <p class="text-gray-400 text-sm">REVENUE</p>
       <h2 class="text-2xl font-black mt-2 text-cyan-300">
         ₹<span x-text="revenue()"></span>
       </h2>
     </div>
 
-    <div class="glass rounded-3xl p-5 glow card-hover">
+    <div class="glass rounded-3xl p-5 glow">
       <p class="text-gray-400 text-sm">LOW STOCK</p>
       <h2 class="text-3xl font-black mt-2 text-orange-300" x-text="lowStockCount()"></h2>
     </div>
 
   </div>
 
-  <!-- =========================================
-       MANAGE KITS PANEL
-  ========================================== -->
+  <!-- MANAGE KITS -->
 
   <div x-show="section==='kits'">
 
@@ -315,7 +313,77 @@
 
     </div>
 
-    <!-- KIT GRID -->
+    <!-- EDIT KIT -->
+
+    <div
+      x-show="showEditKit"
+      class="glass rounded-3xl p-5 mb-6 glow">
+
+      <h2 class="text-2xl font-black mb-5">
+        ✏ Edit Kit
+      </h2>
+
+      <div class="grid md:grid-cols-2 gap-4">
+
+        <input
+          x-model="editKit.name"
+          placeholder="Kit Name"
+          class="glass rounded-2xl p-4 bg-transparent">
+
+        <input
+          x-model="editKit.price"
+          placeholder="Price"
+          type="number"
+          class="glass rounded-2xl p-4 bg-transparent">
+
+        <input
+          x-model="editKit.stock"
+          placeholder="Stock"
+          type="number"
+          class="glass rounded-2xl p-4 bg-transparent">
+
+        <select
+          x-model="editKit.category"
+          class="glass rounded-2xl p-4 bg-[#08111f]">
+
+          <option>HG</option>
+          <option>MG</option>
+          <option>RG</option>
+          <option>PG</option>
+          <option>SD</option>
+
+        </select>
+
+        <input
+          x-model="editKit.image"
+          placeholder="Image URL"
+          class="glass rounded-2xl p-4 bg-transparent md:col-span-2">
+
+      </div>
+
+      <div class="flex gap-3 mt-5">
+
+        <button
+          @click="updateKit()"
+          class="bg-gradient-to-r from-cyan-500 to-emerald-500 px-6 py-3 rounded-2xl font-bold">
+
+          SAVE CHANGES
+
+        </button>
+
+        <button
+          @click="showEditKit=false"
+          class="glass px-6 py-3 rounded-2xl">
+
+          CANCEL
+
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- PRODUCT GRID -->
 
     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
 
@@ -336,18 +404,26 @@
             ₹<span x-text="product.price"></span>
           </p>
 
-          <div class="flex justify-between items-center mt-4">
+          <div class="text-gray-400 mt-2">
 
-            <div class="text-gray-400">
+            Stock:
+            <span x-text="product.stock"></span>
 
-              Stock:
-              <span x-text="product.stock"></span>
+          </div>
 
-            </div>
+          <div class="flex gap-2 mt-4">
+
+            <button
+              @click="openEditKit(product)"
+              class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-2 rounded-xl font-bold">
+
+              ✏ EDIT
+
+            </button>
 
             <button
               @click="deleteKit(product.id)"
-              class="bg-gradient-to-r from-red-500 to-pink-500 px-4 py-2 rounded-xl font-bold">
+              class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-2 rounded-xl font-bold">
 
               DELETE
 
@@ -363,9 +439,7 @@
 
   </div>
 
-  <!-- =========================================
-       CLAIM PANEL
-  ========================================== -->
+  <!-- CLAIMS -->
 
   <div x-show="section==='claims'">
 
@@ -415,50 +489,44 @@
 
         <div class="glass rounded-3xl p-5 glow card-hover">
 
-          <div class="flex justify-between items-start mb-4">
+          <h2
+            class="text-xl font-bold"
+            x-text="claim.productName">
+          </h2>
 
-            <div>
+          <p class="text-cyan-300 text-2xl font-black mt-2">
+            ₹<span x-text="claim.price"></span>
+          </p>
 
-              <h2
-                class="text-xl font-bold"
-                x-text="claim.productName">
-              </h2>
+          <div class="mt-4">
 
-              <p class="text-cyan-300 text-2xl font-black mt-2">
-                ₹<span x-text="claim.price"></span>
-              </p>
+            <span
+              x-show="claim.status==='pending'"
+              class="px-3 py-1 rounded-xl bg-yellow-500/20 text-yellow-300 text-sm">
 
-            </div>
+              Pending
 
-            <div>
+            </span>
 
-              <span
-                x-show="claim.status==='pending'"
-                class="px-3 py-1 rounded-xl bg-yellow-500/20 text-yellow-300 text-sm">
+            <span
+              x-show="claim.status==='approved'"
+              class="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 text-sm">
 
-                Pending
+              Approved
 
-              </span>
+            </span>
 
-              <span
-                x-show="claim.status==='approved'"
-                class="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 text-sm">
+            <span
+              x-show="claim.status==='rejected'"
+              class="px-3 py-1 rounded-xl bg-red-500/20 text-red-300 text-sm">
 
-                Approved
+              Rejected
 
-              </span>
-
-              <span
-                x-show="claim.status==='rejected'"
-                class="px-3 py-1 rounded-xl bg-red-500/20 text-red-300 text-sm">
-
-                Rejected
-
-              </span>
-
-            </div>
+            </span>
 
           </div>
+
+          <!-- PENDING BUTTONS -->
 
           <div
             x-show="claim.status==='pending'"
@@ -482,6 +550,30 @@
 
           </div>
 
+          <!-- APPROVED BUTTONS -->
+
+          <div
+            x-show="claim.status==='approved'"
+            class="flex gap-3 mt-5">
+
+            <button
+              @click="markPending(claim)"
+              class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 py-3 rounded-2xl font-bold">
+
+              ↩ PENDING
+
+            </button>
+
+            <button
+              @click="rejectClaim(claim)"
+              class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 py-3 rounded-2xl font-bold">
+
+              ✖ REJECT
+
+            </button>
+
+          </div>
+
         </div>
 
       </template>
@@ -490,9 +582,7 @@
 
   </div>
 
-  <!-- =========================================
-       ANALYSIS PANEL
-  ========================================== -->
+  <!-- ANALYSIS -->
 
   <div
     x-show="section==='analysis'"
@@ -528,9 +618,7 @@
 
   </div>
 
-  <!-- =========================================
-       REVENUE PANEL
-  ========================================== -->
+  <!-- REVENUE -->
 
   <div
     x-show="section==='revenue'"
@@ -580,6 +668,32 @@
 
     </div>
 
+    <!-- REVENUE CONTROLS -->
+
+    <div class="glass rounded-3xl p-6 glow mt-6">
+
+      <div class="flex justify-between items-center mb-5">
+
+        <h2 class="text-2xl font-black">
+          💸 Revenue Controls
+        </h2>
+
+        <button
+          @click="resetRevenue()"
+          class="bg-gradient-to-r from-red-500 to-pink-500 px-5 py-3 rounded-2xl font-bold">
+
+          RESET REVENUE
+
+        </button>
+
+      </div>
+
+      <p class="text-gray-400">
+        Revenue is calculated automatically from approved claims.
+      </p>
+
+    </div>
+
   </div>
 
 </div>
@@ -602,8 +716,18 @@ function adminApp(){
     db:null,
 
     showAddKit:false,
+    showEditKit:false,
 
     newKit:{
+      name:'',
+      price:'',
+      stock:'',
+      category:'HG',
+      image:''
+    },
+
+    editKit:{
+      id:'',
       name:'',
       price:'',
       stock:'',
@@ -631,8 +755,6 @@ function adminApp(){
 
       this.db = firebase.firestore();
 
-      /* CLAIMS REALTIME */
-
       this.db.collection('claims')
       .orderBy('createdAt','desc')
       .onSnapshot(snapshot => {
@@ -643,8 +765,6 @@ function adminApp(){
         }));
 
       });
-
-      /* PRODUCTS REALTIME */
 
       this.db.collection('products')
       .onSnapshot(snapshot => {
@@ -661,9 +781,7 @@ function adminApp(){
     filteredClaims(){
 
       if(this.claimTab === 'all'){
-
         return this.claims;
-
       }
 
       return this.claims.filter(
@@ -673,27 +791,15 @@ function adminApp(){
     },
 
     pendingClaims(){
-
-      return this.claims.filter(
-        c => c.status === 'pending'
-      );
-
+      return this.claims.filter(c => c.status==='pending');
     },
 
     approvedClaims(){
-
-      return this.claims.filter(
-        c => c.status === 'approved'
-      );
-
+      return this.claims.filter(c => c.status==='approved');
     },
 
     rejectedClaims(){
-
-      return this.claims.filter(
-        c => c.status === 'rejected'
-      );
-
+      return this.claims.filter(c => c.status==='rejected');
     },
 
     revenue(){
@@ -745,9 +851,7 @@ function adminApp(){
     topProduct(){
 
       if(this.claims.length === 0){
-
         return 'No Data';
-
       }
 
       const counts = {};
@@ -773,6 +877,18 @@ function adminApp(){
       .update({
 
         status:'approved'
+
+      });
+
+    },
+
+    async markPending(claim){
+
+      await this.db.collection('claims')
+      .doc(claim.id)
+      .update({
+
+        status:'pending'
 
       });
 
@@ -825,9 +941,13 @@ function adminApp(){
       .add({
 
         name:this.newKit.name,
+
         price:Number(this.newKit.price),
+
         stock:Number(this.newKit.stock),
+
         category:this.newKit.category,
+
         image:this.newKit.image
 
       });
@@ -842,7 +962,51 @@ function adminApp(){
 
       };
 
-      this.showAddKit=false;
+      this.showAddKit = false;
+
+    },
+
+    openEditKit(product){
+
+      this.editKit = {
+
+        id:product.id,
+
+        name:product.name,
+
+        price:product.price,
+
+        stock:product.stock,
+
+        category:product.category,
+
+        image:product.image
+
+      };
+
+      this.showEditKit = true;
+
+    },
+
+    async updateKit(){
+
+      await this.db.collection('products')
+      .doc(this.editKit.id)
+      .update({
+
+        name:this.editKit.name,
+
+        price:Number(this.editKit.price),
+
+        stock:Number(this.editKit.stock),
+
+        category:this.editKit.category,
+
+        image:this.editKit.image
+
+      });
+
+      this.showEditKit = false;
 
     },
 
@@ -853,6 +1017,34 @@ function adminApp(){
       await this.db.collection('products')
       .doc(id)
       .delete();
+
+    },
+
+    async resetRevenue(){
+
+      const confirmReset =
+      confirm('Reset all approved claims?');
+
+      if(!confirmReset) return;
+
+      const approved =
+      this.claims.filter(
+        c => c.status === 'approved'
+      );
+
+      for(const claim of approved){
+
+        await this.db.collection('claims')
+        .doc(claim.id)
+        .update({
+
+          status:'pending'
+
+        });
+
+      }
+
+      alert('Revenue reset complete');
 
     }
 
