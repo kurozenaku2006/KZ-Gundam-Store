@@ -1,5 +1,3 @@
-<!-- FULL UPDATED admin.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,13 +41,7 @@
     }
 
     .drawer{
-      transition:all .3s ease;
-    }
-
-    .glow{
-      box-shadow:
-      0 0 15px rgba(34,211,238,.25),
-      0 0 35px rgba(16,185,129,.15);
+      transition:.3s ease;
     }
 
     .card-hover{
@@ -57,21 +49,29 @@
     }
 
     .card-hover:hover{
-      transform:translateY(-6px);
+      transform:translateY(-5px);
       box-shadow:
-      0 0 20px rgba(34,211,238,.2),
-      0 0 40px rgba(16,185,129,.15);
+      0 0 40px rgba(0,255,255,.18);
     }
 
-    .tab-active{
-      background:linear-gradient(to right,#06b6d4,#10b981);
-      color:white;
-      box-shadow:
-      0 0 20px rgba(16,185,129,.5);
+    @keyframes pulseGlow{
+
+      0%{
+        box-shadow:0 0 10px rgba(20,184,166,.4);
+      }
+
+      50%{
+        box-shadow:0 0 35px rgba(20,184,166,1);
+      }
+
+      100%{
+        box-shadow:0 0 10px rgba(20,184,166,.4);
+      }
+
     }
 
-    input,select{
-      outline:none;
+    .glow-button{
+      animation:pulseGlow 2s infinite ease-in-out;
     }
 
   </style>
@@ -87,7 +87,7 @@
 
   <!-- HEADER -->
 
-  <div class="glass rounded-3xl p-5 flex justify-between items-center mb-6 glow">
+  <div class="glass rounded-3xl p-5 flex justify-between items-center mb-6 shadow-2xl">
 
     <div>
 
@@ -96,7 +96,7 @@
       </h1>
 
       <p class="text-gray-400 text-sm mt-1">
-        Realtime Gundam Management System
+        Realtime Management Dashboard
       </p>
 
     </div>
@@ -105,9 +105,391 @@
       @click="drawerOpen=true"
       class="glass px-5 py-3 rounded-2xl hover:bg-white/10 transition-all duration-300">
 
-      ☰ Menu
+      ☰ Dashboard
 
     </button>
+
+  </div>
+
+  <!-- STATS -->
+
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+
+    <div class="glass rounded-3xl p-5 card-hover">
+
+      <p class="text-gray-400 text-sm mb-2">
+        TOTAL CLAIMS
+      </p>
+
+      <h2
+        class="text-4xl font-black text-cyan-300"
+        x-text="claims.length">
+      </h2>
+
+    </div>
+
+    <div class="glass rounded-3xl p-5 card-hover">
+
+      <p class="text-gray-400 text-sm mb-2">
+        APPROVED
+      </p>
+
+      <h2
+        class="text-4xl font-black text-emerald-300"
+        x-text="approvedCount">
+      </h2>
+
+    </div>
+
+    <div class="glass rounded-3xl p-5 card-hover">
+
+      <p class="text-gray-400 text-sm mb-2">
+        PENDING
+      </p>
+
+      <h2
+        class="text-4xl font-black text-yellow-300"
+        x-text="pendingCount">
+      </h2>
+
+    </div>
+
+    <div class="glass rounded-3xl p-5 card-hover">
+
+      <p class="text-gray-400 text-sm mb-2">
+        REVENUE
+      </p>
+
+      <h2 class="text-4xl font-black text-pink-300">
+
+        ₹<span x-text="revenue"></span>
+
+      </h2>
+
+    </div>
+
+  </div>
+
+  <!-- APPROVALS PANEL -->
+
+  <div
+    x-show="activePanel === 'approvals'"
+    x-transition>
+
+    <div class="grid lg:grid-cols-2 gap-5">
+
+      <template x-for="claim in claims" :key="claim.id">
+
+        <div class="glass rounded-3xl p-5 card-hover">
+
+          <!-- PRODUCT -->
+
+          <div class="flex justify-between items-start mb-4">
+
+            <div>
+
+              <h2
+                class="text-2xl font-black"
+                x-text="claim.productName">
+              </h2>
+
+              <p class="text-cyan-300 text-xl font-bold mt-1">
+
+                ₹<span x-text="claim.price"></span>
+
+              </p>
+
+            </div>
+
+            <div
+              class="px-4 py-2 rounded-2xl text-sm font-bold uppercase"
+              :class="{
+
+                'bg-yellow-500/20 text-yellow-300':
+                claim.status === 'pending',
+
+                'bg-emerald-500/20 text-emerald-300':
+                claim.status === 'approved',
+
+                'bg-red-500/20 text-red-300':
+                claim.status === 'rejected'
+
+              }">
+
+              <span x-text="claim.status"></span>
+
+            </div>
+
+          </div>
+
+          <!-- CUSTOMER -->
+
+          <div class="space-y-3 mb-5">
+
+            <div class="glass rounded-2xl p-3">
+
+              <p class="text-gray-400 text-xs mb-1">
+                CUSTOMER
+              </p>
+
+              <p
+                class="font-bold text-white"
+                x-text="claim.customerName || 'Unknown'">
+              </p>
+
+            </div>
+
+            <div class="glass rounded-2xl p-3">
+
+              <p class="text-gray-400 text-xs mb-1">
+                CONTACT
+              </p>
+
+              <p
+                class="font-bold text-cyan-300 break-all"
+                x-text="claim.contact || 'N/A'">
+              </p>
+
+            </div>
+
+            <div class="glass rounded-2xl p-3">
+
+              <p class="text-gray-400 text-xs mb-1">
+                ADDRESS
+              </p>
+
+              <p
+                class="text-white whitespace-pre-line"
+                x-text="claim.address || 'N/A'">
+              </p>
+
+            </div>
+
+            <div
+              x-show="claim.note"
+              class="glass rounded-2xl p-3">
+
+              <p class="text-gray-400 text-xs mb-1">
+                NOTE
+              </p>
+
+              <p
+                class="text-emerald-300 whitespace-pre-line"
+                x-text="claim.note">
+              </p>
+
+            </div>
+
+          </div>
+
+          <!-- ACTIONS -->
+
+          <div class="grid grid-cols-2 gap-3">
+
+            <button
+              @click="updateClaim(claim.id,'approved')"
+              class="glow-button bg-gradient-to-r from-emerald-500 to-cyan-500 px-5 py-4 rounded-2xl font-black uppercase tracking-wider hover:brightness-125 transition-all duration-300">
+
+              APPROVE
+
+            </button>
+
+            <button
+              @click="updateClaim(claim.id,'rejected')"
+              class="glass px-5 py-4 rounded-2xl font-black uppercase tracking-wider hover:bg-red-500/20 transition-all duration-300">
+
+              REJECT
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </template>
+
+    </div>
+
+  </div>
+
+  <!-- MANAGE KITS PANEL -->
+
+  <div
+    x-show="activePanel === 'kits'"
+    x-transition
+    class="space-y-5">
+
+    <div class="glass rounded-3xl p-5">
+
+      <h2 class="text-3xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+        MANAGE KITS
+      </h2>
+
+      <p class="text-gray-400 mt-2">
+        Inventory Management
+      </p>
+
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-5">
+
+      <template x-for="product in products" :key="product.id">
+
+        <div class="glass rounded-3xl p-5 card-hover">
+
+          <div class="flex gap-4">
+
+            <img
+              :src="product.image"
+              class="h-28 w-28 object-contain rounded-2xl bg-black/20 p-2">
+
+            <div class="flex-1">
+
+              <h2
+                class="text-2xl font-black"
+                x-text="product.name">
+              </h2>
+
+              <div class="grid grid-cols-2 gap-3 mt-4">
+
+                <input
+                  type="number"
+                  x-model="product.price"
+                  class="glass rounded-2xl p-3 bg-transparent">
+
+                <input
+                  type="number"
+                  x-model="product.stock"
+                  class="glass rounded-2xl p-3 bg-transparent">
+
+              </div>
+
+              <button
+                @click="saveProduct(product)"
+                class="glow-button mt-4 bg-gradient-to-r from-cyan-500 to-emerald-500 px-5 py-3 rounded-2xl font-black uppercase tracking-wider w-full">
+
+                SAVE CHANGES
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </template>
+
+    </div>
+
+  </div>
+
+  <!-- ANALYSIS PANEL -->
+
+  <div
+    x-show="activePanel === 'analysis'"
+    x-transition
+    class="space-y-5">
+
+    <div class="glass rounded-3xl p-6">
+
+      <h2 class="text-3xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-6">
+        ANALYTICS
+      </h2>
+
+      <div class="grid md:grid-cols-3 gap-5">
+
+        <div class="glass rounded-3xl p-5">
+
+          <p class="text-gray-400 text-sm mb-2">
+            TOTAL PRODUCTS
+          </p>
+
+          <h2
+            class="text-5xl font-black text-cyan-300"
+            x-text="products.length">
+          </h2>
+
+        </div>
+
+        <div class="glass rounded-3xl p-5">
+
+          <p class="text-gray-400 text-sm mb-2">
+            SOLD ITEMS
+          </p>
+
+          <h2
+            class="text-5xl font-black text-emerald-300"
+            x-text="approvedCount">
+          </h2>
+
+        </div>
+
+        <div class="glass rounded-3xl p-5">
+
+          <p class="text-gray-400 text-sm mb-2">
+            PENDING CLAIMS
+          </p>
+
+          <h2
+            class="text-5xl font-black text-yellow-300"
+            x-text="pendingCount">
+          </h2>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- REVENUE PANEL -->
+
+  <div
+    x-show="activePanel === 'revenue'"
+    x-transition
+    class="space-y-5">
+
+    <div class="glass rounded-3xl p-6">
+
+      <h2 class="text-3xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-6">
+        REVENUE
+      </h2>
+
+      <div class="grid md:grid-cols-2 gap-5">
+
+        <div class="glass rounded-3xl p-5">
+
+          <p class="text-gray-400 text-sm mb-2">
+            APPROVED REVENUE
+          </p>
+
+          <h2 class="text-5xl font-black text-pink-300">
+
+            ₹<span x-text="revenue"></span>
+
+          </h2>
+
+        </div>
+
+        <div class="glass rounded-3xl p-5">
+
+          <p class="text-gray-400 text-sm mb-2">
+            TOTAL CLAIM VALUE
+          </p>
+
+          <h2 class="text-5xl font-black text-cyan-300">
+
+            ₹<span x-text="totalClaimValue"></span>
+
+          </h2>
+
+        </div>
+
+      </div>
+
+    </div>
 
   </div>
 
@@ -125,7 +507,7 @@
   <div
     x-show="drawerOpen"
     x-transition
-    class="drawer fixed top-0 right-0 h-full w-80 glass z-50 p-6 border-l border-white/10 overflow-y-auto">
+    class="drawer fixed top-0 right-0 h-full w-80 glass z-50 p-6 border-l border-white/10">
 
     <div class="flex justify-between items-center mb-6">
 
@@ -135,7 +517,7 @@
 
       <button
         @click="drawerOpen=false"
-        class="glass px-3 py-2 rounded-xl hover:bg-white/10">
+        class="glass px-3 py-2 rounded-xl">
 
         ✕
 
@@ -146,551 +528,36 @@
     <div class="space-y-3">
 
       <button
-        @click="section='kits'; drawerOpen=false"
-        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10">
+        @click="activePanel='kits'; drawerOpen=false"
+        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300">
 
         📦 Manage Kits
 
       </button>
 
       <button
-        @click="section='claims'; drawerOpen=false"
-        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10">
+        @click="activePanel='approvals'; drawerOpen=false"
+        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300">
 
         ✅ Manage Approvals
 
       </button>
 
       <button
-        @click="section='analysis'; drawerOpen=false"
-        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10">
+        @click="activePanel='analysis'; drawerOpen=false"
+        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300">
 
         📊 Analysis
 
       </button>
 
       <button
-        @click="section='revenue'; drawerOpen=false"
-        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10">
+        @click="activePanel='revenue'; drawerOpen=false"
+        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300">
 
         💰 Revenue
 
       </button>
-
-      <button
-        onclick="window.location.href='index.html'"
-        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10">
-
-        🏠 Storefront
-
-      </button>
-
-    </div>
-
-  </div>
-
-  <!-- ANALYTICS -->
-
-  <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
-
-    <div class="glass rounded-3xl p-5 glow">
-      <p class="text-gray-400 text-sm">TOTAL CLAIMS</p>
-      <h2 class="text-3xl font-black mt-2" x-text="claims.length"></h2>
-    </div>
-
-    <div class="glass rounded-3xl p-5 glow">
-      <p class="text-gray-400 text-sm">PENDING</p>
-      <h2 class="text-3xl font-black mt-2 text-yellow-300" x-text="pendingClaims().length"></h2>
-    </div>
-
-    <div class="glass rounded-3xl p-5 glow">
-      <p class="text-gray-400 text-sm">APPROVED</p>
-      <h2 class="text-3xl font-black mt-2 text-emerald-300" x-text="approvedClaims().length"></h2>
-    </div>
-
-    <div class="glass rounded-3xl p-5 glow">
-      <p class="text-gray-400 text-sm">REJECTED</p>
-      <h2 class="text-3xl font-black mt-2 text-red-300" x-text="rejectedClaims().length"></h2>
-    </div>
-
-    <div class="glass rounded-3xl p-5 glow">
-      <p class="text-gray-400 text-sm">REVENUE</p>
-      <h2 class="text-2xl font-black mt-2 text-cyan-300">
-        ₹<span x-text="revenue()"></span>
-      </h2>
-    </div>
-
-    <div class="glass rounded-3xl p-5 glow">
-      <p class="text-gray-400 text-sm">LOW STOCK</p>
-      <h2 class="text-3xl font-black mt-2 text-orange-300" x-text="lowStockCount()"></h2>
-    </div>
-
-  </div>
-
-  <!-- MANAGE KITS -->
-
-  <div x-show="section==='kits'">
-
-    <div class="flex justify-between items-center mb-6">
-
-      <h2 class="text-3xl font-black">
-        📦 Manage Kits
-      </h2>
-
-      <button
-        @click="showAddKit=true"
-        class="bg-gradient-to-r from-cyan-500 to-emerald-500 px-5 py-3 rounded-2xl font-bold hover:brightness-125">
-
-        + Add Kit
-
-      </button>
-
-    </div>
-
-    <!-- ADD KIT -->
-
-    <div
-      x-show="showAddKit"
-      class="glass rounded-3xl p-5 mb-6 glow">
-
-      <div class="grid md:grid-cols-2 gap-4">
-
-        <input
-          x-model="newKit.name"
-          placeholder="Kit Name"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <input
-          x-model="newKit.price"
-          placeholder="Price"
-          type="number"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <input
-          x-model="newKit.stock"
-          placeholder="Stock"
-          type="number"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <select
-          x-model="newKit.category"
-          class="glass rounded-2xl p-4 bg-[#08111f]">
-
-          <option>HG</option>
-          <option>MG</option>
-          <option>RG</option>
-          <option>PG</option>
-          <option>SD</option>
-
-        </select>
-
-        <input
-          x-model="newKit.image"
-          placeholder="Image URL"
-          class="glass rounded-2xl p-4 bg-transparent md:col-span-2">
-
-      </div>
-
-      <div class="flex gap-3 mt-5">
-
-        <button
-          @click="addKit()"
-          class="bg-gradient-to-r from-cyan-500 to-emerald-500 px-6 py-3 rounded-2xl font-bold">
-
-          SAVE KIT
-
-        </button>
-
-        <button
-          @click="showAddKit=false"
-          class="glass px-6 py-3 rounded-2xl">
-
-          CANCEL
-
-        </button>
-
-      </div>
-
-    </div>
-
-    <!-- EDIT KIT -->
-
-    <div
-      x-show="showEditKit"
-      class="glass rounded-3xl p-5 mb-6 glow">
-
-      <h2 class="text-2xl font-black mb-5">
-        ✏ Edit Kit
-      </h2>
-
-      <div class="grid md:grid-cols-2 gap-4">
-
-        <input
-          x-model="editKit.name"
-          placeholder="Kit Name"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <input
-          x-model="editKit.price"
-          placeholder="Price"
-          type="number"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <input
-          x-model="editKit.stock"
-          placeholder="Stock"
-          type="number"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <select
-          x-model="editKit.category"
-          class="glass rounded-2xl p-4 bg-[#08111f]">
-
-          <option>HG</option>
-          <option>MG</option>
-          <option>RG</option>
-          <option>PG</option>
-          <option>SD</option>
-
-        </select>
-
-        <input
-          x-model="editKit.image"
-          placeholder="Image URL"
-          class="glass rounded-2xl p-4 bg-transparent md:col-span-2">
-
-      </div>
-
-      <div class="flex gap-3 mt-5">
-
-        <button
-          @click="updateKit()"
-          class="bg-gradient-to-r from-cyan-500 to-emerald-500 px-6 py-3 rounded-2xl font-bold">
-
-          SAVE CHANGES
-
-        </button>
-
-        <button
-          @click="showEditKit=false"
-          class="glass px-6 py-3 rounded-2xl">
-
-          CANCEL
-
-        </button>
-
-      </div>
-
-    </div>
-
-    <!-- PRODUCT GRID -->
-
-    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-
-      <template x-for="product in products" :key="product.id">
-
-        <div class="glass rounded-3xl p-5 glow card-hover">
-
-          <img
-            :src="product.image"
-            class="h-48 w-full object-contain mb-4">
-
-          <h2
-            class="text-xl font-bold"
-            x-text="product.name">
-          </h2>
-
-          <p class="text-cyan-300 text-2xl font-black mt-2">
-            ₹<span x-text="product.price"></span>
-          </p>
-
-          <div class="text-gray-400 mt-2">
-
-            Stock:
-            <span x-text="product.stock"></span>
-
-          </div>
-
-          <div class="flex gap-2 mt-4">
-
-            <button
-              @click="openEditKit(product)"
-              class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-2 rounded-xl font-bold">
-
-              ✏ EDIT
-
-            </button>
-
-            <button
-              @click="deleteKit(product.id)"
-              class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-2 rounded-xl font-bold">
-
-              DELETE
-
-            </button>
-
-          </div>
-
-        </div>
-
-      </template>
-
-    </div>
-
-  </div>
-
-  <!-- CLAIMS -->
-
-  <div x-show="section==='claims'">
-
-    <div class="flex flex-wrap gap-3 mb-6 mt-6">
-
-      <button
-        @click="claimTab='all'"
-        :class="claimTab==='all' ? 'tab-active' : ''"
-        class="glass px-5 py-3 rounded-2xl">
-
-        ALL
-
-      </button>
-
-      <button
-        @click="claimTab='pending'"
-        :class="claimTab==='pending' ? 'tab-active' : ''"
-        class="glass px-5 py-3 rounded-2xl">
-
-        PENDING
-
-      </button>
-
-      <button
-        @click="claimTab='approved'"
-        :class="claimTab==='approved' ? 'tab-active' : ''"
-        class="glass px-5 py-3 rounded-2xl">
-
-        APPROVED
-
-      </button>
-
-      <button
-        @click="claimTab='rejected'"
-        :class="claimTab==='rejected' ? 'tab-active' : ''"
-        class="glass px-5 py-3 rounded-2xl">
-
-        REJECTED
-
-      </button>
-
-    </div>
-
-    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-
-      <template x-for="claim in filteredClaims()" :key="claim.id">
-
-        <div class="glass rounded-3xl p-5 glow card-hover">
-
-          <h2
-            class="text-xl font-bold"
-            x-text="claim.productName">
-          </h2>
-
-          <p class="text-cyan-300 text-2xl font-black mt-2">
-            ₹<span x-text="claim.price"></span>
-          </p>
-
-          <div class="mt-4">
-
-            <span
-              x-show="claim.status==='pending'"
-              class="px-3 py-1 rounded-xl bg-yellow-500/20 text-yellow-300 text-sm">
-
-              Pending
-
-            </span>
-
-            <span
-              x-show="claim.status==='approved'"
-              class="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 text-sm">
-
-              Approved
-
-            </span>
-
-            <span
-              x-show="claim.status==='rejected'"
-              class="px-3 py-1 rounded-xl bg-red-500/20 text-red-300 text-sm">
-
-              Rejected
-
-            </span>
-
-          </div>
-
-          <!-- PENDING BUTTONS -->
-
-          <div
-            x-show="claim.status==='pending'"
-            class="flex gap-3 mt-5">
-
-            <button
-              @click="approveClaim(claim)"
-              class="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 py-3 rounded-2xl font-bold">
-
-              ✔ APPROVE
-
-            </button>
-
-            <button
-              @click="rejectClaim(claim)"
-              class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 py-3 rounded-2xl font-bold">
-
-              ✖ REJECT
-
-            </button>
-
-          </div>
-
-          <!-- APPROVED BUTTONS -->
-
-          <div
-            x-show="claim.status==='approved'"
-            class="flex gap-3 mt-5">
-
-            <button
-              @click="markPending(claim)"
-              class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 py-3 rounded-2xl font-bold">
-
-              ↩ PENDING
-
-            </button>
-
-            <button
-              @click="rejectClaim(claim)"
-              class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 py-3 rounded-2xl font-bold">
-
-              ✖ REJECT
-
-            </button>
-
-          </div>
-
-        </div>
-
-      </template>
-
-    </div>
-
-  </div>
-
-  <!-- ANALYSIS -->
-
-  <div
-    x-show="section==='analysis'"
-    class="mt-6">
-
-    <h2 class="text-3xl font-black mb-6">
-      📊 Analysis
-    </h2>
-
-    <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
-
-      <div class="glass rounded-3xl p-6 glow">
-        <p class="text-gray-400">Most Claimed</p>
-        <h2 class="text-2xl font-black mt-3" x-text="topProduct()"></h2>
-      </div>
-
-      <div class="glass rounded-3xl p-6 glow">
-        <p class="text-gray-400">Total Products</p>
-        <h2 class="text-2xl font-black mt-3" x-text="products.length"></h2>
-      </div>
-
-      <div class="glass rounded-3xl p-6 glow">
-        <p class="text-gray-400">Out Of Stock</p>
-        <h2 class="text-2xl font-black mt-3" x-text="outOfStockCount()"></h2>
-      </div>
-
-      <div class="glass rounded-3xl p-6 glow">
-        <p class="text-gray-400">Inventory Units</p>
-        <h2 class="text-2xl font-black mt-3" x-text="inventoryCount()"></h2>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- REVENUE -->
-
-  <div
-    x-show="section==='revenue'"
-    class="mt-6">
-
-    <h2 class="text-3xl font-black mb-6">
-      💰 Revenue
-    </h2>
-
-    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-
-      <div class="glass rounded-3xl p-6 glow">
-
-        <p class="text-gray-400">
-          Approved Revenue
-        </p>
-
-        <h2 class="text-4xl font-black text-emerald-300 mt-4">
-          ₹<span x-text="revenue()"></span>
-        </h2>
-
-      </div>
-
-      <div class="glass rounded-3xl p-6 glow">
-
-        <p class="text-gray-400">
-          Pending Revenue
-        </p>
-
-        <h2 class="text-4xl font-black text-yellow-300 mt-4">
-          ₹<span x-text="pendingRevenue()"></span>
-        </h2>
-
-      </div>
-
-      <div class="glass rounded-3xl p-6 glow">
-
-        <p class="text-gray-400">
-          Rejected Value
-        </p>
-
-        <h2 class="text-4xl font-black text-red-300 mt-4">
-          ₹<span x-text="rejectedRevenue()"></span>
-        </h2>
-
-      </div>
-
-    </div>
-
-    <!-- REVENUE CONTROLS -->
-
-    <div class="glass rounded-3xl p-6 glow mt-6">
-
-      <div class="flex justify-between items-center mb-5">
-
-        <h2 class="text-2xl font-black">
-          💸 Revenue Controls
-        </h2>
-
-        <button
-          @click="resetRevenue()"
-          class="bg-gradient-to-r from-red-500 to-pink-500 px-5 py-3 rounded-2xl font-bold">
-
-          RESET REVENUE
-
-        </button>
-
-      </div>
-
-      <p class="text-gray-400">
-        Revenue is calculated automatically from approved claims.
-      </p>
 
     </div>
 
@@ -706,34 +573,19 @@ function adminApp(){
 
     drawerOpen:false,
 
-    section:'kits',
-
-    claimTab:'all',
+    activePanel:'approvals',
 
     claims:[],
+
     products:[],
 
-    db:null,
+    revenue:0,
 
-    showAddKit:false,
-    showEditKit:false,
+    approvedCount:0,
 
-    newKit:{
-      name:'',
-      price:'',
-      stock:'',
-      category:'HG',
-      image:''
-    },
+    pendingCount:0,
 
-    editKit:{
-      id:'',
-      name:'',
-      price:'',
-      stock:'',
-      category:'HG',
-      image:''
-    },
+    totalClaimValue:0,
 
     init(){
 
@@ -753,9 +605,9 @@ function adminApp(){
 
       }
 
-      this.db = firebase.firestore();
+      const db = firebase.firestore();
 
-      this.db.collection('claims')
+      db.collection('claims')
       .orderBy('createdAt','desc')
       .onSnapshot(snapshot => {
 
@@ -764,9 +616,11 @@ function adminApp(){
           ...doc.data()
         }));
 
+        this.calculateStats();
+
       });
 
-      this.db.collection('products')
+      db.collection('products')
       .onSnapshot(snapshot => {
 
         this.products = snapshot.docs.map(doc => ({
@@ -778,273 +632,56 @@ function adminApp(){
 
     },
 
-    filteredClaims(){
+    calculateStats(){
 
-      if(this.claimTab === 'all'){
-        return this.claims;
-      }
-
-      return this.claims.filter(
-        c => c.status === this.claimTab
-      );
-
-    },
-
-    pendingClaims(){
-      return this.claims.filter(c => c.status==='pending');
-    },
-
-    approvedClaims(){
-      return this.claims.filter(c => c.status==='approved');
-    },
-
-    rejectedClaims(){
-      return this.claims.filter(c => c.status==='rejected');
-    },
-
-    revenue(){
-
-      return this.approvedClaims()
-      .reduce((sum,c)=>sum+c.price,0);
-
-    },
-
-    pendingRevenue(){
-
-      return this.pendingClaims()
-      .reduce((sum,c)=>sum+c.price,0);
-
-    },
-
-    rejectedRevenue(){
-
-      return this.rejectedClaims()
-      .reduce((sum,c)=>sum+c.price,0);
-
-    },
-
-    lowStockCount(){
-
-      return this.products.filter(
-        p => p.stock <= 1
-      ).length;
-
-    },
-
-    inventoryCount(){
-
-      return this.products.reduce(
-        (sum,p)=>sum+p.stock,
-        0
-      );
-
-    },
-
-    outOfStockCount(){
-
-      return this.products.filter(
-        p => p.stock <= 0
-      ).length;
-
-    },
-
-    topProduct(){
-
-      if(this.claims.length === 0){
-        return 'No Data';
-      }
-
-      const counts = {};
-
-      this.claims.forEach(c => {
-
-        counts[c.productName] =
-        (counts[c.productName] || 0) + 1;
-
-      });
-
-      return Object.keys(counts)
-      .reduce((a,b)=>
-        counts[a] > counts[b] ? a : b
-      );
-
-    },
-
-    async approveClaim(claim){
-
-      await this.db.collection('claims')
-      .doc(claim.id)
-      .update({
-
-        status:'approved'
-
-      });
-
-    },
-
-    async markPending(claim){
-
-      await this.db.collection('claims')
-      .doc(claim.id)
-      .update({
-
-        status:'pending'
-
-      });
-
-    },
-
-    async rejectClaim(claim){
-
-      await this.db.collection('claims')
-      .doc(claim.id)
-      .update({
-
-        status:'rejected'
-
-      });
-
-      const productRef =
-      this.db.collection('products')
-      .doc(claim.productId);
-
-      const productDoc =
-      await productRef.get();
-
-      if(productDoc.exists){
-
-        await productRef.update({
-
-          stock:
-          (productDoc.data().stock || 0) + 1
-
-        });
-
-      }
-
-    },
-
-    async addKit(){
-
-      if(
-        !this.newKit.name ||
-        !this.newKit.price ||
-        !this.newKit.stock ||
-        !this.newKit.image
-      ){
-
-        return alert('Fill all fields');
-
-      }
-
-      await this.db.collection('products')
-      .add({
-
-        name:this.newKit.name,
-
-        price:Number(this.newKit.price),
-
-        stock:Number(this.newKit.stock),
-
-        category:this.newKit.category,
-
-        image:this.newKit.image
-
-      });
-
-      this.newKit = {
-
-        name:'',
-        price:'',
-        stock:'',
-        category:'HG',
-        image:''
-
-      };
-
-      this.showAddKit = false;
-
-    },
-
-    openEditKit(product){
-
-      this.editKit = {
-
-        id:product.id,
-
-        name:product.name,
-
-        price:product.price,
-
-        stock:product.stock,
-
-        category:product.category,
-
-        image:product.image
-
-      };
-
-      this.showEditKit = true;
-
-    },
-
-    async updateKit(){
-
-      await this.db.collection('products')
-      .doc(this.editKit.id)
-      .update({
-
-        name:this.editKit.name,
-
-        price:Number(this.editKit.price),
-
-        stock:Number(this.editKit.stock),
-
-        category:this.editKit.category,
-
-        image:this.editKit.image
-
-      });
-
-      this.showEditKit = false;
-
-    },
-
-    async deleteKit(id){
-
-      if(!confirm('Delete this kit?')) return;
-
-      await this.db.collection('products')
-      .doc(id)
-      .delete();
-
-    },
-
-    async resetRevenue(){
-
-      const confirmReset =
-      confirm('Reset all approved claims?');
-
-      if(!confirmReset) return;
-
-      const approved =
+      this.approvedCount =
       this.claims.filter(
         c => c.status === 'approved'
-      );
+      ).length;
 
-      for(const claim of approved){
+      this.pendingCount =
+      this.claims.filter(
+        c => c.status === 'pending'
+      ).length;
 
-        await this.db.collection('claims')
-        .doc(claim.id)
-        .update({
+      this.revenue =
+      this.claims
+      .filter(c => c.status === 'approved')
+      .reduce((sum,c)=> sum + (c.price || 0),0);
 
-          status:'pending'
+      this.totalClaimValue =
+      this.claims
+      .reduce((sum,c)=> sum + (c.price || 0),0);
 
-        });
+    },
 
-      }
+    async updateClaim(id,status){
 
-      alert('Revenue reset complete');
+      const db = firebase.firestore();
+
+      await db.collection('claims')
+      .doc(id)
+      .update({
+
+        status:status
+
+      });
+
+    },
+
+    async saveProduct(product){
+
+      const db = firebase.firestore();
+
+      await db.collection('products')
+      .doc(product.id)
+      .update({
+
+        price:Number(product.price),
+
+        stock:Number(product.stock)
+
+      });
 
     }
 
