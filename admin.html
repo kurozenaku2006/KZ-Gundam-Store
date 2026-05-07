@@ -1,86 +1,167 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <title>Admin Panel</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    body {
-      background: #0a0a0a;
-    }
-  </style>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 
-<body class="text-white">
+<body class="bg-black text-white">
 
-  <div class="p-6 max-w-6xl mx-auto">
+<!-- LOGIN -->
+<div id="loginPage" class="flex items-center justify-center h-screen">
+  <div class="bg-gray-900 p-6 rounded w-80">
+    <h1 class="text-xl font-bold mb-4">Admin Login</h1>
 
-    <h1 class="text-3xl font-bold mb-6">🛠 Admin Dashboard</h1>
+    <input id="user" placeholder="Username"
+      class="w-full p-2 mb-2 bg-gray-800 rounded"/>
 
-    <div id="claims" class="grid gap-4"></div>
+    <input id="pass" type="password" placeholder="Password"
+      class="w-full p-2 mb-4 bg-gray-800 rounded"/>
 
+    <button onclick="login()"
+      class="w-full bg-cyan-500 py-2 rounded">
+      Login
+    </button>
+
+    <p id="error" class="text-red-500 text-sm mt-2"></p>
   </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden p-6 max-w-6xl mx-auto">
+
+  <h1 class="text-3xl font-bold mb-4">Live Orders ⚡</h1>
+
+  <button onclick="logout()" class="bg-red-500 px-3 py-1 rounded mb-4">
+    Logout
+  </button>
+
+  <div id="claims" class="grid gap-4"></div>
+</div>
 
 <script>
-  const API = "/api/claims";
 
-  async function loadClaims() {
-    const res = await fetch(API);
-    const data = await res.json();
+const socket = io("http://localhost:5000");
 
-    const container = document.getElementById("claims");
-    container.innerHTML = "";
+const API = "http://localhost:5000/api/claims";
+const LOGIN = "http://localhost:5000/api/admin/login";
 
-    data.forEach(claim => {
-      const card = document.createElement("div");
+// ================= SOCKET =================
+socket.on("new-claim", addClaim);
+socket.on("update-claim", updateClaim);
 
-      card.className =
-        "bg-gray-900 p-4 rounded-lg flex justify-between items-center shadow";
+// ================= AUTH =================
+function token() {
+  return localStorage.getItem("adminToken");
+}
 
-      card.innerHTML = `
-        <div>
-          <h2 class="text-lg font-bold">${claim.productName}</h2>
-          <p class="text-sm text-gray-400">
-            User: ${claim.userName} | Qty: ${claim.quantity} | ₹${claim.price}
-          </p>
-          <p class="text-xs mt-1">
-            Status: <span class="text-yellow-400">${claim.status}</span>
-          </p>
-        </div>
+function headers() {
+  return {
+    "Content-Type": "application/json",
+    "Authorization": token()
+  };
+}
 
-        <div class="flex gap-2">
-          <button onclick="updateStatus('${claim._id}', 'approved')"
-            class="px-3 py-1 bg-green-500 rounded hover:bg-green-600">
-            Approve
-          </button>
+// ================= LOGIN =================
+async function login() {
+  const res = await fetch(LOGIN, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: user.value,
+      password: pass.value
+    })
+  });
 
-          <button onclick="updateStatus('${claim._id}', 'rejected')"
-            class="px-3 py-1 bg-red-500 rounded hover:bg-red-600">
-            Reject
-          </button>
-        </div>
-      `;
-
-      container.appendChild(card);
-    });
+  if (!res.ok) {
+    error.innerText = "Invalid login";
+    return;
   }
 
-  async function updateStatus(id, status) {
-    await fetch(`/api/claims/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ status })
-    });
+  const data = await res.json();
+  localStorage.setItem("adminToken", data.token);
 
-    loadClaims();
-  }
+  showDashboard();
+}
 
+// ================= DASHBOARD =================
+function showDashboard() {
+  loginPage.classList.add("hidden");
+  dashboard.classList.remove("hidden");
   loadClaims();
+}
+
+// ================= LOAD CLAIMS =================
+async function loadClaims() {
+  const res = await fetch(API, { headers: headers() });
+  const data = await res.json();
+
+  claims.innerHTML = "";
+  data.forEach(addClaim);
+}
+
+// ================= ADD CLAIM =================
+function addClaim(c) {
+  const div = document.createElement("div");
+  div.id = c._id;
+
+  div.className = "bg-gray-900 p-4 rounded flex justify-between";
+
+  div.innerHTML = `
+    <div>
+      <p class="font-bold">${c.productName}</p>
+      <p class="text-sm text-gray-400">
+        ${c.userName} • Qty ${c.quantity} • ₹${c.price}
+      </p>
+      <p class="text-xs text-yellow-400 status">
+        Status: ${c.status}
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      <button onclick="update('${c._id}','approved')"
+        class="bg-green-500 px-3 py-1 rounded">
+        Approve
+      </button>
+
+      <button onclick="update('${c._id}','rejected')"
+        class="bg-red-500 px-3 py-1 rounded">
+        Reject
+      </button>
+    </div>
+  `;
+
+  claims.prepend(div);
+}
+
+// ================= UPDATE UI =================
+function updateClaim(c) {
+  const el = document.getElementById(c._id);
+  if (!el) return;
+
+  el.querySelector(".status").innerText = "Status: " + c.status;
+}
+
+// ================= UPDATE STATUS =================
+async function update(id, status) {
+  await fetch(`http://localhost:5000/api/claims/${id}`, {
+    method: "PUT",
+    headers: headers(),
+    body: JSON.stringify({ status })
+  });
+}
+
+// ================= LOGOUT =================
+function logout() {
+  localStorage.removeItem("adminToken");
+  location.reload();
+}
+
+// AUTO LOGIN
+if (token()) showDashboard();
+
 </script>
 
 </body>
