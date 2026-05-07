@@ -1,166 +1,312 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin Panel</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kurozenaku Admin</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <style>
+    body{
+      background:
+      radial-gradient(circle at top,#0f172a 0%,#020617 50%,#000 100%);
+      color:white;
+      min-height:100vh;
+    }
+
+    .glass{
+      background:rgba(255,255,255,.05);
+      backdrop-filter:blur(18px);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .card{
+      transition:.25s;
+    }
+
+    .card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 0 30px rgba(0,255,255,.15);
+    }
+
+    .approve-btn{
+      background:linear-gradient(to right,#22c55e,#10b981);
+      box-shadow:0 0 20px rgba(16,185,129,.4);
+    }
+
+    .approve-btn:hover{
+      transform:scale(1.05);
+      filter:brightness(1.1);
+    }
+
+    .reject-btn{
+      background:linear-gradient(to right,#ef4444,#dc2626);
+      box-shadow:0 0 20px rgba(239,68,68,.4);
+    }
+
+    .reject-btn:hover{
+      transform:scale(1.05);
+      filter:brightness(1.1);
+    }
+  </style>
 </head>
 
-<body class="bg-black text-white">
+<body class="p-6">
 
 <!-- LOGIN -->
-<div id="loginPage" class="flex items-center justify-center h-screen">
-  <div class="bg-gray-900 p-6 rounded w-80">
-    <h1 class="text-xl font-bold mb-4">Admin Login</h1>
+<div id="loginPage" class="flex items-center justify-center min-h-screen">
 
-    <input id="user" placeholder="Username"
-      class="w-full p-2 mb-2 bg-gray-800 rounded"/>
+  <div class="glass p-8 rounded-3xl w-full max-w-sm">
 
-    <input id="pass" type="password" placeholder="Password"
-      class="w-full p-2 mb-4 bg-gray-800 rounded"/>
+    <h1 class="text-3xl font-black text-cyan-400 mb-6">
+      ⚡ ADMIN LOGIN
+    </h1>
 
-    <button onclick="login()"
-      class="w-full bg-cyan-500 py-2 rounded">
-      Login
+    <input
+      id="user"
+      placeholder="Username"
+      class="w-full mb-4 p-3 rounded-xl bg-black/30 outline-none border border-white/10">
+
+    <input
+      id="pass"
+      type="password"
+      placeholder="Password"
+      class="w-full mb-4 p-3 rounded-xl bg-black/30 outline-none border border-white/10">
+
+    <button
+      onclick="login()"
+      class="w-full bg-cyan-500 hover:bg-cyan-400 py-3 rounded-xl font-black transition">
+
+      LOGIN
+
     </button>
 
-    <p id="error" class="text-red-500 text-sm mt-2"></p>
+    <p id="error" class="text-red-400 mt-3"></p>
+
   </div>
+
 </div>
 
 <!-- DASHBOARD -->
-<div id="dashboard" class="hidden p-6 max-w-6xl mx-auto">
+<div id="dashboard" class="hidden max-w-7xl mx-auto">
 
-  <h1 class="text-3xl font-bold mb-4">Live Orders ⚡</h1>
+  <!-- HEADER -->
+  <div class="glass rounded-3xl p-6 mb-6 flex justify-between items-center">
 
-  <button onclick="logout()" class="bg-red-500 px-3 py-1 rounded mb-4">
-    Logout
-  </button>
+    <div>
 
-  <div id="claims" class="grid gap-4"></div>
+      <h1 class="text-4xl font-black text-cyan-400">
+        LIVE CLAIMS ⚡
+      </h1>
+
+      <p class="text-gray-400 mt-1">
+        Kurozenaku Admin Dashboard
+      </p>
+
+    </div>
+
+    <button
+      onclick="logout()"
+      class="bg-red-500 hover:bg-red-400 px-5 py-3 rounded-2xl font-bold transition">
+
+      Logout
+
+    </button>
+
+  </div>
+
+  <!-- STATS -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+
+    <div class="glass rounded-2xl p-5">
+      <p class="text-gray-400 text-sm">Total Claims</p>
+      <h2 id="totalClaims" class="text-3xl font-black text-cyan-400">0</h2>
+    </div>
+
+    <div class="glass rounded-2xl p-5">
+      <p class="text-gray-400 text-sm">Pending</p>
+      <h2 id="pendingClaims" class="text-3xl font-black text-yellow-400">0</h2>
+    </div>
+
+    <div class="glass rounded-2xl p-5">
+      <p class="text-gray-400 text-sm">Approved</p>
+      <h2 id="approvedClaims" class="text-3xl font-black text-green-400">0</h2>
+    </div>
+
+    <div class="glass rounded-2xl p-5">
+      <p class="text-gray-400 text-sm">Rejected</p>
+      <h2 id="rejectedClaims" class="text-3xl font-black text-red-400">0</h2>
+    </div>
+
+  </div>
+
+  <!-- CLAIMS -->
+  <div id="claims" class="grid gap-5"></div>
+
 </div>
 
 <script>
 
-const socket = io("http://localhost:5000");
+const API = "http://localhost:5000";
 
-const API = "http://localhost:5000/api/claims";
-const LOGIN = "http://localhost:5000/api/admin/login";
-
-// ================= SOCKET =================
-socket.on("new-claim", addClaim);
-socket.on("update-claim", updateClaim);
-
-// ================= AUTH =================
-function token() {
+function token(){
   return localStorage.getItem("adminToken");
 }
 
-function headers() {
+function headers(){
   return {
-    "Content-Type": "application/json",
-    "Authorization": token()
+    "Content-Type":"application/json",
+    "Authorization":token()
   };
 }
 
-// ================= LOGIN =================
-async function login() {
-  const res = await fetch(LOGIN, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: user.value,
-      password: pass.value
+async function login(){
+
+  const res = await fetch(API + "/admin/login",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      username:user.value,
+      password:pass.value
     })
   });
 
-  if (!res.ok) {
-    error.innerText = "Invalid login";
+  const data = await res.json();
+
+  if(!res.ok){
+    error.innerText = data.error;
     return;
   }
 
-  const data = await res.json();
-  localStorage.setItem("adminToken", data.token);
+  localStorage.setItem("adminToken",data.token);
 
   showDashboard();
+
 }
 
-// ================= DASHBOARD =================
-function showDashboard() {
+function showDashboard(){
+
   loginPage.classList.add("hidden");
   dashboard.classList.remove("hidden");
+
   loadClaims();
+
 }
 
-// ================= LOAD CLAIMS =================
-async function loadClaims() {
-  const res = await fetch(API, { headers: headers() });
+async function loadClaims(){
+
+  const res = await fetch(API + "/claims",{
+    headers:headers()
+  });
+
   const data = await res.json();
 
   claims.innerHTML = "";
-  data.forEach(addClaim);
+
+  let pending = 0;
+  let approved = 0;
+  let rejected = 0;
+
+  data.forEach(c=>{
+
+    if(c.status === "PENDING") pending++;
+    if(c.status === "APPROVED") approved++;
+    if(c.status === "REJECTED") rejected++;
+
+    addClaim(c);
+
+  });
+
+  totalClaims.innerText = data.length;
+  pendingClaims.innerText = pending;
+  approvedClaims.innerText = approved;
+  rejectedClaims.innerText = rejected;
+
 }
 
-// ================= ADD CLAIM =================
-function addClaim(c) {
-  const div = document.createElement("div");
-  div.id = c._id;
+function addClaim(c){
 
-  div.className = "bg-gray-900 p-4 rounded flex justify-between";
+  const div = document.createElement("div");
+
+  div.className =
+  "card glass rounded-3xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-5";
 
   div.innerHTML = `
+
     <div>
-      <p class="font-bold">${c.productName}</p>
-      <p class="text-sm text-gray-400">
-        ${c.userName} • Qty ${c.quantity} • ₹${c.price}
+
+      <h2 class="text-2xl font-black text-cyan-300">
+        ${c.productName}
+      </h2>
+
+      <p class="text-gray-400 mt-1">
+        ₹${c.price}
       </p>
-      <p class="text-xs text-yellow-400 status">
-        Status: ${c.status}
+
+      <p class="mt-2 text-sm">
+        Status:
+        <span class="
+          ${c.status === 'PENDING' ? 'text-yellow-400' : ''}
+          ${c.status === 'APPROVED' ? 'text-green-400' : ''}
+          ${c.status === 'REJECTED' ? 'text-red-400' : ''}
+        ">
+          ${c.status}
+        </span>
       </p>
+
     </div>
 
-    <div class="flex gap-2">
-      <button onclick="update('${c._id}','approved')"
-        class="bg-green-500 px-3 py-1 rounded">
-        Approve
+    <div class="flex gap-3">
+
+      <button
+        onclick="updateClaim('${c.id}','APPROVED')"
+        class="approve-btn px-5 py-3 rounded-2xl font-black transition">
+
+        APPROVE
+
       </button>
 
-      <button onclick="update('${c._id}','rejected')"
-        class="bg-red-500 px-3 py-1 rounded">
-        Reject
+      <button
+        onclick="updateClaim('${c.id}','REJECTED')"
+        class="reject-btn px-5 py-3 rounded-2xl font-black transition">
+
+        REJECT
+
       </button>
+
     </div>
+
   `;
 
   claims.prepend(div);
+
 }
 
-// ================= UPDATE UI =================
-function updateClaim(c) {
-  const el = document.getElementById(c._id);
-  if (!el) return;
+async function updateClaim(id,status){
 
-  el.querySelector(".status").innerText = "Status: " + c.status;
-}
-
-// ================= UPDATE STATUS =================
-async function update(id, status) {
-  await fetch(`http://localhost:5000/api/claims/${id}`, {
-    method: "PUT",
-    headers: headers(),
-    body: JSON.stringify({ status })
+  await fetch(API + "/claims/" + id,{
+    method:"PUT",
+    headers:headers(),
+    body:JSON.stringify({ status })
   });
+
+  loadClaims();
+
 }
 
-// ================= LOGOUT =================
-function logout() {
+function logout(){
+
   localStorage.removeItem("adminToken");
   location.reload();
+
 }
 
-// AUTO LOGIN
-if (token()) showDashboard();
+if(token()){
+  showDashboard();
+}
 
 </script>
 
