@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
   <title>Kurozenaku Store</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
+
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -83,6 +84,7 @@
     }
 
   </style>
+
 </head>
 
 <body>
@@ -307,6 +309,8 @@
 
         </div>
 
+        <!-- CLAIM BUTTON -->
+
         <button
           @click="claimProduct(p)"
           :disabled="pending[p.id] || p.stock <= 0"
@@ -314,7 +318,16 @@
 
           <span
             class="text-white text-xl font-black drop-shadow-[0_0_25px_rgba(255,255,255,1)] uppercase tracking-[0.2em]"
-            x-text="pending[p.id] ? '⏳ CLAIMING...' : (p.stock <= 0 ? 'RESERVED' : '⚡ CLAIM')">
+
+            x-text="
+              pending[p.id]
+                ? '⏳ CLAIMING...'
+                : (
+                    p.stock <= 0
+                      ? 'RESERVED'
+                      : '⚡ CLAIM'
+                  )
+            ">
           </span>
 
         </button>
@@ -386,6 +399,10 @@ function app(){
 
     ],
 
+    /* =====================================
+       INITIALIZE FIRESTORE
+    ===================================== */
+
     init(){
 
       try{
@@ -407,6 +424,10 @@ function app(){
         }
 
         const db = firebase.firestore();
+
+        /*
+          REALTIME PRODUCT SYNC
+        */
 
         db.collection('products').onSnapshot(
 
@@ -453,6 +474,10 @@ function app(){
 
     },
 
+    /* =====================================
+       FILTER PRODUCTS
+    ===================================== */
+
     filteredProducts(){
 
       return this.products.filter(p =>
@@ -468,6 +493,10 @@ function app(){
       );
 
     },
+
+    /* =====================================
+       ADMIN LOGIN
+    ===================================== */
 
     openAdminPrompt(){
 
@@ -487,6 +516,10 @@ function app(){
 
     },
 
+    /* =====================================
+       CLAIM PRODUCT
+    ===================================== */
+
     async claimProduct(p){
 
       if(p.stock <= 0 || this.pending[p.id]) return;
@@ -495,52 +528,53 @@ function app(){
 
       try{
 
-        p.stock--;
+        /*
+          Send claim request to backend
+        */
 
-        const msg =
-        `🛒 Claim\n${p.name}\nPrice: ₹${p.price}`;
+        const response = await fetch(
 
-        const phone = '919359760115';
+          'http://localhost:3000/claim',
 
-        setTimeout(() => {
+          {
 
-          window.open(
+            method:'POST',
 
-            `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+            headers:{
+              'Content-Type':'application/json'
+            },
 
-          );
+            body:JSON.stringify({
 
-        },300);
+              productId:p.id,
+              productName:p.name,
+              price:p.price
 
-        try{
+            })
 
-          const db = firebase.firestore();
+          }
 
-          await db.collection('claims').add({
+        );
 
-            productId:p.id,
-            productName:p.name,
-            price:p.price,
-            createdAt:new Date(),
-            status:'pending'
+        const data = await response.json();
 
-          });
+        /* SUCCESS */
 
-          await db.collection('products').doc(p.id).update({
+        if(data.success){
 
-            stock:p.stock
+          console.log('CLAIM SUCCESS');
 
-          });
+        } else {
 
-        } catch(syncError){
-
-          console.error('CLAIM ERROR:', syncError);
+          alert(data.message || 'Claim failed');
 
         }
 
       } catch(error){
 
         console.error('CLAIM ERROR:', error);
+
+        alert('Server connection failed');
 
       }
 
