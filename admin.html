@@ -1,18 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kurozenaku Admin</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>KUROZENAKU ADMIN</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
+
     body{
+      font-family:'Inter',sans-serif;
       background:
-      radial-gradient(circle at top,#0f172a 0%,#020617 50%,#000 100%);
+      radial-gradient(circle at top,#0f172a 0%,#020617 50%,#000000 100%);
       color:white;
-      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    .logo-font{
+      font-family:'Orbitron',sans-serif;
+      letter-spacing:.12em;
     }
 
     .glass{
@@ -21,291 +38,494 @@
       border:1px solid rgba(255,255,255,.08);
     }
 
-    .card{
-      transition:.25s;
+    .drawer{
+      transition:all .3s ease;
     }
 
-    .card:hover{
-      transform:translateY(-4px);
-      box-shadow:0 0 30px rgba(0,255,255,.15);
+    .card-glow{
+      box-shadow:
+      0 0 20px rgba(34,211,238,.15),
+      0 0 35px rgba(16,185,129,.08);
     }
 
-    .approve-btn{
-      background:linear-gradient(to right,#22c55e,#10b981);
-      box-shadow:0 0 20px rgba(16,185,129,.4);
+    .menu-btn{
+      transition:.25s ease;
     }
 
-    .approve-btn:hover{
-      transform:scale(1.05);
+    .menu-btn:hover{
+      transform:translateX(6px);
+      box-shadow:0 0 25px rgba(0,255,255,.25);
+    }
+
+    .neon-button{
+      background:linear-gradient(to right,#06b6d4,#10b981);
+      box-shadow:0 0 25px rgba(20,184,166,.45);
+      transition:.3s ease;
+    }
+
+    .neon-button:hover{
+      transform:translateY(-2px) scale(1.03);
+      box-shadow:0 0 40px rgba(20,184,166,.9);
       filter:brightness(1.1);
     }
 
-    .reject-btn{
-      background:linear-gradient(to right,#ef4444,#dc2626);
-      box-shadow:0 0 20px rgba(239,68,68,.4);
-    }
-
-    .reject-btn:hover{
-      transform:scale(1.05);
-      filter:brightness(1.1);
-    }
   </style>
+
 </head>
 
-<body class="p-6">
+<body>
 
-<!-- LOGIN -->
-<div id="loginPage" class="flex items-center justify-center min-h-screen">
-
-  <div class="glass p-8 rounded-3xl w-full max-w-sm">
-
-    <h1 class="text-3xl font-black text-cyan-400 mb-6">
-      ⚡ ADMIN LOGIN
-    </h1>
-
-    <input
-      id="user"
-      placeholder="Username"
-      class="w-full mb-4 p-3 rounded-xl bg-black/30 outline-none border border-white/10">
-
-    <input
-      id="pass"
-      type="password"
-      placeholder="Password"
-      class="w-full mb-4 p-3 rounded-xl bg-black/30 outline-none border border-white/10">
-
-    <button
-      onclick="login()"
-      class="w-full bg-cyan-500 hover:bg-cyan-400 py-3 rounded-xl font-black transition">
-
-      LOGIN
-
-    </button>
-
-    <p id="error" class="text-red-400 mt-3"></p>
-
-  </div>
-
-</div>
-
-<!-- DASHBOARD -->
-<div id="dashboard" class="hidden max-w-7xl mx-auto">
+<div
+  x-data="adminApp()"
+  x-init="init()"
+  class="max-w-7xl mx-auto p-4 md:p-6">
 
   <!-- HEADER -->
-  <div class="glass rounded-3xl p-6 mb-6 flex justify-between items-center">
+
+  <div class="glass rounded-3xl p-5 flex justify-between items-center mb-6 shadow-2xl">
 
     <div>
 
-      <h1 class="text-4xl font-black text-cyan-400">
-        LIVE CLAIMS ⚡
+      <h1 class="logo-font text-3xl md:text-4xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+        KUROZENAKU ADMIN
       </h1>
 
-      <p class="text-gray-400 mt-1">
-        Kurozenaku Admin Dashboard
+      <p class="text-gray-400 text-sm mt-1">
+        Premium Dashboard Control
       </p>
 
     </div>
 
     <button
-      onclick="logout()"
-      class="bg-red-500 hover:bg-red-400 px-5 py-3 rounded-2xl font-bold transition">
+      @click="menuOpen = true"
+      class="glass px-5 py-3 rounded-2xl hover:bg-white/10 active:scale-95 transition-all duration-300">
 
-      Logout
+      ☰ Menu
 
     </button>
 
   </div>
 
-  <!-- STATS -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <!-- TOP STATS -->
 
-    <div class="glass rounded-2xl p-5">
-      <p class="text-gray-400 text-sm">Total Claims</p>
-      <h2 id="totalClaims" class="text-3xl font-black text-cyan-400">0</h2>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+    <div class="glass rounded-3xl p-5 card-glow">
+      <p class="text-gray-400 text-sm mb-2">Total Kits</p>
+      <h2 class="text-4xl font-black text-cyan-300" x-text="products.length"></h2>
     </div>
 
-    <div class="glass rounded-2xl p-5">
-      <p class="text-gray-400 text-sm">Pending</p>
-      <h2 id="pendingClaims" class="text-3xl font-black text-yellow-400">0</h2>
+    <div class="glass rounded-3xl p-5 card-glow">
+      <p class="text-gray-400 text-sm mb-2">Pending Claims</p>
+      <h2 class="text-4xl font-black text-yellow-300" x-text="pendingClaims"></h2>
     </div>
 
-    <div class="glass rounded-2xl p-5">
-      <p class="text-gray-400 text-sm">Approved</p>
-      <h2 id="approvedClaims" class="text-3xl font-black text-green-400">0</h2>
+    <div class="glass rounded-3xl p-5 card-glow">
+      <p class="text-gray-400 text-sm mb-2">Approved</p>
+      <h2 class="text-4xl font-black text-emerald-300" x-text="approvedClaims"></h2>
     </div>
 
-    <div class="glass rounded-2xl p-5">
-      <p class="text-gray-400 text-sm">Rejected</p>
-      <h2 id="rejectedClaims" class="text-3xl font-black text-red-400">0</h2>
+    <div class="glass rounded-3xl p-5 card-glow">
+      <p class="text-gray-400 text-sm mb-2">Revenue</p>
+      <h2 class="text-4xl font-black text-pink-300">
+        ₹<span x-text="totalRevenue"></span>
+      </h2>
     </div>
 
   </div>
 
-  <!-- CLAIMS -->
-  <div id="claims" class="grid gap-5"></div>
+  <!-- PAGE TITLE -->
+
+  <div class="flex justify-between items-center mb-6">
+
+    <h2
+      class="text-3xl font-black"
+      x-text="currentPage">
+    </h2>
+
+    <button
+      x-show="currentPage === 'Manage Kits'"
+      class="neon-button px-6 py-3 rounded-2xl font-black">
+
+      + Add Kit
+
+    </button>
+
+  </div>
+
+  <!-- MANAGE KITS -->
+
+  <div x-show="currentPage === 'Manage Kits'">
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+
+      <template x-for="p in products" :key="p.id">
+
+        <div class="glass rounded-3xl p-4 card-glow">
+
+          <div class="bg-black/20 rounded-2xl overflow-hidden mb-4">
+
+            <img
+              :src="p.image"
+              class="h-44 w-full object-contain p-4">
+
+          </div>
+
+          <h2
+            class="font-bold text-lg mb-2"
+            x-text="p.name">
+          </h2>
+
+          <div class="flex justify-between items-center mb-4">
+
+            <p class="text-cyan-300 font-black text-2xl">
+              ₹<span x-text="p.price"></span>
+            </p>
+
+            <p class="text-gray-400 text-sm">
+              Stock:
+              <span x-text="p.stock"></span>
+            </p>
+
+          </div>
+
+          <div class="flex gap-2">
+
+            <button
+              class="flex-1 neon-button py-3 rounded-2xl font-bold">
+              Edit
+            </button>
+
+            <button
+              class="glass py-3 px-4 rounded-2xl hover:bg-red-500/20 transition">
+              🗑
+            </button>
+
+          </div>
+
+        </div>
+
+      </template>
+
+    </div>
+
+  </div>
+
+  <!-- MANAGE APPROVAL -->
+
+  <div x-show="currentPage === 'Manage Approval'">
+
+    <div class="space-y-5">
+
+      <template x-for="c in claims" :key="c.id">
+
+        <div class="glass rounded-3xl p-5 card-glow">
+
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+
+            <div>
+
+              <h2
+                class="text-2xl font-black mb-2"
+                x-text="c.productName">
+              </h2>
+
+              <p class="text-gray-300">
+                Customer:
+                <span x-text="c.customerName || 'Unknown'"></span>
+              </p>
+
+              <p class="text-gray-400 text-sm mt-1">
+                Status:
+                <span
+                  class="text-cyan-300 font-bold"
+                  x-text="c.status || 'pending'">
+                </span>
+              </p>
+
+            </div>
+
+            <div class="flex gap-3">
+
+              <button
+                class="neon-button px-6 py-3 rounded-2xl font-black">
+
+                APPROVE
+
+              </button>
+
+              <button
+                class="glass px-6 py-3 rounded-2xl hover:bg-red-500/20 transition font-black">
+
+                REJECT
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </template>
+
+    </div>
+
+  </div>
+
+  <!-- ANALYSIS -->
+
+  <div x-show="currentPage === 'Analysis'">
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+      <div class="glass rounded-3xl p-6 card-glow">
+
+        <h2 class="text-2xl font-black mb-4">
+          Most Claimed Kits
+        </h2>
+
+        <div class="space-y-4">
+
+          <template x-for="p in products.slice(0,4)">
+
+            <div class="glass rounded-2xl p-4 flex justify-between">
+
+              <span x-text="p.name"></span>
+
+              <span class="text-cyan-300 font-bold">
+                Popular
+              </span>
+
+            </div>
+
+          </template>
+
+        </div>
+
+      </div>
+
+      <div class="glass rounded-3xl p-6 card-glow">
+
+        <h2 class="text-2xl font-black mb-4">
+          Stock Alerts
+        </h2>
+
+        <div class="space-y-4">
+
+          <template x-for="p in products.filter(x => x.stock <= 1)">
+
+            <div class="glass rounded-2xl p-4 flex justify-between">
+
+              <span x-text="p.name"></span>
+
+              <span class="text-red-300 font-bold">
+                LOW
+              </span>
+
+            </div>
+
+          </template>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- REVENUE -->
+
+  <div x-show="currentPage === 'Revenue'">
+
+    <div class="glass rounded-3xl p-6 card-glow">
+
+      <h2 class="text-3xl font-black text-emerald-300 mb-6">
+        Revenue Summary
+      </h2>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+
+        <div class="glass rounded-2xl p-5">
+          <p class="text-gray-400 text-sm mb-2">Today</p>
+          <h2 class="text-3xl font-black text-cyan-300">₹12,000</h2>
+        </div>
+
+        <div class="glass rounded-2xl p-5">
+          <p class="text-gray-400 text-sm mb-2">Weekly</p>
+          <h2 class="text-3xl font-black text-emerald-300">₹48,000</h2>
+        </div>
+
+        <div class="glass rounded-2xl p-5">
+          <p class="text-gray-400 text-sm mb-2">Monthly</p>
+          <h2 class="text-3xl font-black text-pink-300">₹1,80,000</h2>
+        </div>
+
+        <div class="glass rounded-2xl p-5">
+          <p class="text-gray-400 text-sm mb-2">Projected</p>
+          <h2 class="text-3xl font-black text-yellow-300">₹3,50,000</h2>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- MENU OVERLAY -->
+
+  <div
+    x-show="menuOpen"
+    x-transition.opacity
+    class="fixed inset-0 bg-black/70 z-40"
+    @click="menuOpen = false">
+  </div>
+
+  <!-- MENU DRAWER -->
+
+  <div
+    x-show="menuOpen"
+    x-transition
+    class="drawer fixed top-0 left-0 h-full w-80 glass z-50 p-6 border-r border-white/10">
+
+    <div class="flex justify-between items-center mb-8">
+
+      <h2 class="text-3xl font-black">
+        Dashboard
+      </h2>
+
+      <button
+        @click="menuOpen=false"
+        class="glass px-3 py-2 rounded-xl hover:bg-white/10 transition">
+
+        ✕
+
+      </button>
+
+    </div>
+
+    <div class="space-y-4">
+
+      <button
+        @click="changePage('Manage Kits')"
+        class="menu-btn w-full glass p-5 rounded-2xl text-left text-lg font-bold hover:bg-white/10">
+
+        📦 Manage Kits
+
+      </button>
+
+      <button
+        @click="changePage('Manage Approval')"
+        class="menu-btn w-full glass p-5 rounded-2xl text-left text-lg font-bold hover:bg-white/10">
+
+        ✅ Manage Approval
+
+      </button>
+
+      <button
+        @click="changePage('Analysis')"
+        class="menu-btn w-full glass p-5 rounded-2xl text-left text-lg font-bold hover:bg-white/10">
+
+        📊 Analysis
+
+      </button>
+
+      <button
+        @click="changePage('Revenue')"
+        class="menu-btn w-full glass p-5 rounded-2xl text-left text-lg font-bold hover:bg-white/10">
+
+        💰 Revenue
+
+      </button>
+
+    </div>
+
+  </div>
 
 </div>
 
 <script>
 
-const API = "http://localhost:5000";
+function adminApp(){
 
-function token(){
-  return localStorage.getItem("adminToken");
-}
-
-function headers(){
   return {
-    "Content-Type":"application/json",
-    "Authorization":token()
-  };
-}
 
-async function login(){
+    menuOpen:false,
 
-  const res = await fetch(API + "/admin/login",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
+    currentPage:'Manage Kits',
+
+    products:[],
+    claims:[],
+
+    totalRevenue:0,
+    pendingClaims:0,
+    approvedClaims:0,
+
+    init(){
+
+      const firebaseConfig = {
+
+        apiKey:'AIzaSyByLURDPjEbLepc3Wz3O1MAYYLXSeu04Zg',
+
+        authDomain:'kurozenaku-gundam-store.firebaseapp.com',
+
+        projectId:'kurozenaku-gundam-store'
+
+      };
+
+      if(!firebase.apps.length){
+
+        firebase.initializeApp(firebaseConfig);
+
+      }
+
+      const db = firebase.firestore();
+
+      db.collection('products').onSnapshot((snapshot)=>{
+
+        this.products = snapshot.docs.map(doc => ({
+
+          id:doc.id,
+          ...doc.data()
+
+        }));
+
+      });
+
+      db.collection('claims').onSnapshot((snapshot)=>{
+
+        this.claims = snapshot.docs.map(doc => ({
+
+          id:doc.id,
+          ...doc.data()
+
+        }));
+
+        this.pendingClaims =
+        this.claims.filter(c => c.status === 'pending').length;
+
+        this.approvedClaims =
+        this.claims.filter(c => c.status === 'approved').length;
+
+        this.totalRevenue = this.claims
+        .filter(c => c.status === 'approved')
+        .reduce((sum,c)=> sum + (c.price || 0),0);
+
+      });
+
     },
-    body:JSON.stringify({
-      username:user.value,
-      password:pass.value
-    })
-  });
 
-  const data = await res.json();
+    changePage(page){
 
-  if(!res.ok){
-    error.innerText = data.error;
-    return;
+      this.currentPage = page;
+
+      this.menuOpen = false;
+
+    }
+
   }
 
-  localStorage.setItem("adminToken",data.token);
-
-  showDashboard();
-
-}
-
-function showDashboard(){
-
-  loginPage.classList.add("hidden");
-  dashboard.classList.remove("hidden");
-
-  loadClaims();
-
-}
-
-async function loadClaims(){
-
-  const res = await fetch(API + "/claims",{
-    headers:headers()
-  });
-
-  const data = await res.json();
-
-  claims.innerHTML = "";
-
-  let pending = 0;
-  let approved = 0;
-  let rejected = 0;
-
-  data.forEach(c=>{
-
-    if(c.status === "PENDING") pending++;
-    if(c.status === "APPROVED") approved++;
-    if(c.status === "REJECTED") rejected++;
-
-    addClaim(c);
-
-  });
-
-  totalClaims.innerText = data.length;
-  pendingClaims.innerText = pending;
-  approvedClaims.innerText = approved;
-  rejectedClaims.innerText = rejected;
-
-}
-
-function addClaim(c){
-
-  const div = document.createElement("div");
-
-  div.className =
-  "card glass rounded-3xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-5";
-
-  div.innerHTML = `
-
-    <div>
-
-      <h2 class="text-2xl font-black text-cyan-300">
-        ${c.productName}
-      </h2>
-
-      <p class="text-gray-400 mt-1">
-        ₹${c.price}
-      </p>
-
-      <p class="mt-2 text-sm">
-        Status:
-        <span class="
-          ${c.status === 'PENDING' ? 'text-yellow-400' : ''}
-          ${c.status === 'APPROVED' ? 'text-green-400' : ''}
-          ${c.status === 'REJECTED' ? 'text-red-400' : ''}
-        ">
-          ${c.status}
-        </span>
-      </p>
-
-    </div>
-
-    <div class="flex gap-3">
-
-      <button
-        onclick="updateClaim('${c.id}','APPROVED')"
-        class="approve-btn px-5 py-3 rounded-2xl font-black transition">
-
-        APPROVE
-
-      </button>
-
-      <button
-        onclick="updateClaim('${c.id}','REJECTED')"
-        class="reject-btn px-5 py-3 rounded-2xl font-black transition">
-
-        REJECT
-
-      </button>
-
-    </div>
-
-  `;
-
-  claims.prepend(div);
-
-}
-
-async function updateClaim(id,status){
-
-  await fetch(API + "/claims/" + id,{
-    method:"PUT",
-    headers:headers(),
-    body:JSON.stringify({ status })
-  });
-
-  loadClaims();
-
-}
-
-function logout(){
-
-  localStorage.removeItem("adminToken");
-  location.reload();
-
-}
-
-if(token()){
-  showDashboard();
 }
 
 </script>
