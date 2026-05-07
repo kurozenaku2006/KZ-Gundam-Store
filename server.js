@@ -1,101 +1,457 @@
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
 
 const app = express();
+
+app.use(cors());
 app.use(express.json());
 
-app.use(cors({
-  origin: "*",
-  methods: ["GET","POST"],
-  allowedHeaders: ["Content-Type"]
-}));
+/* =========================
+   FIREBASE ADMIN
+========================= */
 
-// 🔥 FIREBASE ADMIN
-const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+const serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount)
 });
 
 const db = admin.firestore();
 
-// ==============================
-// 🛒 CREATE CLAIM (SAFE)
-// ==============================
-app.post("/claim", async (req, res) => {
+/* =========================
+   ADMIN PASSCODE
+========================= */
+
+const ADMIN_PASSCODE = "KZ2026";
+
+/* =========================
+   HEALTH CHECK
+========================= */
+
+app.get("/", (req, res) => {
+
+  res.json({
+    success: true,
+    message: "KUROZENAKU SERVER RUNNING"
+  });
+
+});
+
+/* =========================
+   ADMIN LOGIN
+========================= */
+
+app.post("/admin/login", async (req, res) => {
+
   try {
-    const { productId } = req.body;
 
-    if (!productId) {
-      return res.status(400).send("Missing productId");
+    const { passcode } = req.body;
+
+    if(passcode !== ADMIN_PASSCODE){
+
+      return res.status(401).json({
+        success:false,
+        message:"Invalid passcode"
+      });
+
     }
 
-    const productRef = db.collection("products").doc(productId);
-    const productSnap = await productRef.get();
+    res.json({
+      success:true
+    });
 
-    if (!productSnap.exists) {
-      return res.status(404).send("Product not found");
+  } catch(error){
+
+    console.error(error);
+
+    res.status(500).json({
+      success:false,
+      message:error.message
+    });
+
+  }
+
+});
+
+/* =========================
+   GET PRODUCTS
+========================= */
+
+app.get("/products", async (req, res) => {
+
+  try {
+
+    const snapshot = await db
+    .collection("products")
+    .get();
+
+    const products = snapshot.docs.map(doc => ({
+
+      id:doc.id,
+      ...doc.data()
+
+    }));
+
+    res.json({
+      success:true,
+      products
+    });
+
+  } catch(error){
+
+    console.error(error);
+
+    res.status(500).json({
+      success:false,
+      message:error.message
+    });
+
+  }
+
+});
+
+/* =========================
+   CREATE CLAIM
+========================= */
+
+app.post("/claim", async (req, res) => {
+
+  try {
+
+    const {
+
+      productId,
+      productName,
+      price
+
+    } = req.body;
+
+    const productRef =
+    db.collection("products").doc(productId);
+
+    const productDoc =
+    await productRef.get();
+
+    if(!productDoc.exists){
+
+      return res.status(404).json({
+        success:false,
+        message:"Product not found"
+      });
+
     }
 
-    const product = productSnap.data();
+    const productData = productDoc.data();
 
-    // ❌ No stock
-    if (product.stock <= 0) {
-      return res.status(400).send("Out of stock");
+    if(productData.stock <= 0){
+
+      return res.status(400).json({
+        success:false,
+        message:"Out of stock"
+      });
+
     }
 
-    // 🔥 TRANSACTION (VERY IMPORTANT)
-    const claimId = await db.runTransaction(async (t) => {
+    /* =========================
+       SAFE STOCK UPDATE
+    ========================= */
 
-      const freshSnap = await t.get(productRef);
-      const freshData = freshSnap.data();
+    await db.runTransaction(async (transaction)=>{
 
-      if (freshData.stock <= 0) {
+      const latestProduct =
+      await transaction.get(productRef);
+
+      const latestStock =
+      latestProduct.data().stock;
+
+      if(latestStock <= 0){
+
         throw new Error("Out of stock");
+
       }
 
-      // reduce stock
-      t.update(productRef, {
-        stock: freshData.stock - 1
+      transaction.update(productRef,{
+
+        stock:latestStock - 1
+
       });
 
-      // create claim
-      const claimRef = db.collection("claims").doc();
+      const claimRef =
+      db.collection("claims").doc();
 
-      t.set(claimRef, {
+      transaction.set(claimRef,{
+
         productId,
-        productName: freshData.name,
-        price: freshData.price,
-        status: "PENDING",
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
+        productName,
+        price,
+
+        status:"pending",
+
+        createdAt:
+        admin.firestore.FieldValue.serverTimestamp()
+
       });
 
-      return claimRef.id;
     });
 
     res.json({
-      success: true,
-      claimId,
-      productName: product.name,
-      price: product.price
+      success:true,
+      message:"Claim successful"
     });
 
-  } catch (e) {
-    console.error(e);
-    res.status(500).send("Claim failed");
+  } catch(error){
+
+    console.error(error);
+
+    res.status(500).json({
+      success:false,
+      message:error.message
+    });
+
   }
+
 });
 
-// ==============================
-// 🔥 HEALTH CHECK
-// ==============================
-app.get("/", (req, res) => {
-  res.send("Server running");
+/* =========================
+   GET CLAIMS
+========================= */
+
+app.get("/claims", async (req, res) => {
+
+  try {
+
+    const snapshot = await db
+    .collection("claims")
+    .orderBy("createdAt","desc")
+    .get();
+
+    const claims = snapshot.docs.map(doc => ({
+
+      id:doc.id,
+      ...doc.data()
+
+    }));
+
+    res.json({
+      success:true,
+      claims
+    });
+
+  } catch(error){
+
+    console.error(error);
+
+    res.status(500).json({
+      success:false,
+      message:error.message
+    });
+
+  }
+
 });
 
-// ==============================
-app.listen(process.env.PORT || 5000, () => {
-  console.log("Server started");
+/* =========================
+   APPROVE CLAIM
+========================= */
+
+app.put("/claims/:id/approve", async (req, res) => {
+
+  try {
+
+    const claimId = req.params.id;
+
+    await db
+    .collection("claims")
+    .doc(claimId)
+    .update({
+
+      status:"approved"
+
+    });
+
+    res.json({
+      success:true
+    });
+
+  } catch(error){
+
+    console.error(error);
+
+    res.status(500).json({
+      success:false,
+      message:error.message
+    });
+
+  }
+
+});
+
+/* =========================
+   REJECT CLAIM
+========================= */
+
+app.put("/claims/:id/reject", async (req, res) => {
+
+  try {
+
+    const claimId = req.params.id;
+
+    await db
+    .collection("claims")
+    .doc(claimId)
+    .update({
+
+      status:"rejected"
+
+    });
+
+    res.json({
+      success:true
+    });
+
+  } catch(error){
+
+    console.error(error);
+
+    res.status(500).json({
+      success:false,
+      message:error.message
+    });
+
+  }
+
+});
+
+/* =========================
+   ADD PRODUCT
+========================= */
+
+app.post("/products", async (req, res) => {
+
+  try {
+
+    const {
+
+      name,
+      price,
+      stock,
+      image,
+      category
+
+    } = req.body;
+
+    const docRef =
+    await db.collection("products").add({
+
+      name,
+      price,
+      stock,
+      image,
+      category,
+
+      createdAt:
+      admin.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    res.json({
+      success:true,
+      id:docRef.id
+    });
+
+  } catch(error){
+
+    console.error(error);
+
+    res.status(500).json({
+      success:false,
+      message:error.message
+    });
+
+  }
+
+});
+
+/* =========================
+   UPDATE PRODUCT
+========================= */
+
+app.put("/products/:id", async (req, res) => {
+
+  try {
+
+    const productId = req.params.id;
+
+    await db
+    .collection("products")
+    .doc(productId)
+    .update(req.body);
+
+    res.json({
+      success:true
+    });
+
+  } catch(error){
+
+    console.error(error);
+
+    res.status(500).json({
+      success:false,
+      message:error.message
+    });
+
+  }
+
+});
+
+/* =========================
+   DELETE PRODUCT
+========================= */
+
+app.delete("/products/:id", async (req, res) => {
+
+  try {
+
+    const productId = req.params.id;
+
+    await db
+    .collection("products")
+    .doc(productId)
+    .delete();
+
+    res.json({
+      success:true
+    });
+
+  } catch(error){
+
+    console.error(error);
+
+    res.status(500).json({
+      success:false,
+      message:error.message
+    });
+
+  }
+
+});
+
+/* =========================
+   SERVER START
+========================= */
+
+const PORT = 3000;
+
+app.listen(PORT, ()=>{
+
+  console.log(`
+==================================
+KUROZENAKU SERVER RUNNING
+PORT: ${PORT}
+==================================
+  `);
+
 });
