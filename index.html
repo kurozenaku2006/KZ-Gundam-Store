@@ -603,74 +603,102 @@ function app(){
 
     },
 
-async submitClaim(){
+    async submitClaim(){
 
-  if(
-    !this.claimForm.name ||
-    !this.claimForm.contact ||
-    !this.claimForm.address
-  ){
+      if(
+        !this.claimForm.name ||
+        !this.claimForm.contact ||
+        !this.claimForm.address
+      ){
 
-    return alert('Please fill required fields');
+        return alert('Please fill required fields');
 
-  }
+      }
 
-  const p = this.selectedProduct;
+      const p = this.selectedProduct;
 
-  this.claimLoading = true;
+      this.claimLoading = true;
 
-  this.pending[p.id] = true;
+      this.pending[p.id] = true;
 
-  try{
+      try{
 
-    const db = firebase.firestore();
+        const db = firebase.firestore();
 
-    await db.collection('claims').add({
+        const productRef =
+        db.collection('products').doc(p.id);
 
-      productId:p.id,
+        const productDoc =
+        await productRef.get();
 
-      productName:p.name,
+        const currentStock =
+        productDoc.data().stock || 0;
 
-      price:p.price,
+        if(currentStock <= 0){
 
-      customerName:this.claimForm.name,
+          this.claimLoading = false;
 
-      contact:this.claimForm.contact,
+          this.pending[p.id] = false;
 
-      address:this.claimForm.address,
+          return;
 
-      note:this.claimForm.note || '',
+        }
 
-      status:'pending',
+        await productRef.update({
 
-      createdAt:new Date(),
-      updatedAt:new Date()
+          stock: currentStock - 1
 
-    });
+        });
 
-    this.claimModal = false;
+        await db.collection('claims').add({
 
-    this.claimLoading = false;
+          productId:p.id,
 
-    this.pending[p.id] = false;
+          productName:p.name,
 
-    alert('Claim submitted');
+          price:p.price,
 
-  }
+          status:'pending',
 
-  catch(error){
+          customerName:this.claimForm.name,
 
-    console.error(error);
+          contact:this.claimForm.contact,
 
-    alert('Claim failed');
+          address:this.claimForm.address,
 
-    this.claimLoading = false;
+          note:this.claimForm.note || '',
 
-    this.pending[p.id] = false;
+          createdAt:new Date()
 
-  }
+        });
 
-}
+        p.stock = currentStock - 1;
+
+        setTimeout(()=>{
+
+          this.claimModal = false;
+
+          this.claimLoading = false;
+
+          this.pending[p.id] = false;
+
+        },1000);
+
+      }
+
+      catch(error){
+
+        console.error(error);
+
+        alert('Claim failed');
+
+        this.claimLoading = false;
+
+        this.pending[p.id] = false;
+
+      }
+
+    },
 
     openClaimsPanel(){
 
@@ -716,3 +744,4 @@ async submitClaim(){
 
 </body>
 </html>
+
