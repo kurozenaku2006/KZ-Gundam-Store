@@ -498,7 +498,7 @@
               <div class="flex gap-2 w-full">
 
                <button
-  @click="changeClaimStatus(claim,'approved')"
+  @click="updateClaimStatus(claim,'approved')"
   class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(34,211,238,.25)] hover:shadow-[0_0_30px_rgba(16,185,129,.35)]">
 
   APPROVE
@@ -506,7 +506,7 @@
 </button>
 
 <button
-  @click="changeClaimStatus(claim,'rejected')"
+  @click="updateClaimStatus(claim,'rejected')"
   class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,.25)] hover:shadow-[0_0_30px_rgba(236,72,153,.35)]">
 
   REJECT
@@ -521,7 +521,7 @@
             <template x-if="claim.status === 'approved'">
 
              <button
-  @click="changeClaimStatus(claim,'pending')"
+  @click="updateClaimStatus(claim,'pending')"
   class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(234,179,8,.25)] hover:shadow-[0_0_30px_rgba(249,115,22,.35)]">
 
   REVERT TO PENDING
@@ -537,7 +537,7 @@
               <div class="flex gap-2 w-full">
 
               <button
-  @click="changeClaimStatus(claim,'pending')"
+  @click="updateClaimStatus(claim,'pending')"
   class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(234,179,8,.25)] hover:shadow-[0_0_30px_rgba(249,115,22,.35)]">
 
   REVERT
