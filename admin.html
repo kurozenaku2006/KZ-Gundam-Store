@@ -160,18 +160,18 @@
       </button>
 
       <button
-        @click="section='bin'; drawerOpen=false"
-        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] active:scale-95">
-
-        🗑 Claim Bin
-
-      </button>
-
-      <button
         @click="section='analysis'; drawerOpen=false"
         class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] active:scale-95">
 
         📊 Analysis
+
+      </button>
+
+      <button
+        @click="section='bin'; drawerOpen=false"
+        class="w-full glass p-4 rounded-2xl text-left hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] active:scale-95">
+
+        🗑 Claim Bin
 
       </button>
 
@@ -245,140 +245,6 @@
 
     </div>
 
-    <!-- ADD KIT -->
-
-    <div x-show="showAddKit" class="glass rounded-3xl p-5 mb-6 glow">
-
-      <div class="grid md:grid-cols-2 gap-4">
-
-        <input
-          x-model="newKit.name"
-          placeholder="Kit Name"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <input
-          x-model="newKit.price"
-          placeholder="Price"
-          type="number"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <input
-          x-model="newKit.stock"
-          placeholder="Stock"
-          type="number"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <select
-          x-model="newKit.category"
-          class="glass rounded-2xl p-4 bg-[#08111f]">
-
-          <option>HG</option>
-          <option>MG</option>
-          <option>RG</option>
-          <option>PG</option>
-          <option>SD</option>
-
-        </select>
-
-        <input
-          x-model="newKit.image"
-          placeholder="Image URL"
-          class="glass rounded-2xl p-4 bg-transparent md:col-span-2">
-
-      </div>
-
-      <div class="flex gap-3 mt-5">
-
-        <button
-          @click="addKit()"
-          class="bg-gradient-to-r from-cyan-500 to-emerald-500 px-6 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] active:scale-95">
-
-          SAVE KIT
-
-        </button>
-
-        <button
-          @click="showAddKit=false"
-          class="glass px-6 py-3 rounded-2xl hover:bg-white/10 transition-all duration-300 hover:scale-[1.03] active:scale-95">
-
-          CANCEL
-
-        </button>
-
-      </div>
-
-    </div>
-
-    <!-- EDIT KIT -->
-
-    <div x-show="showEditKit" class="glass rounded-3xl p-5 mb-6 glow">
-
-      <h2 class="text-2xl font-bold mb-4">
-        ✏ Edit Kit
-      </h2>
-
-      <div class="grid md:grid-cols-2 gap-4">
-
-        <input
-          x-model="editKit.name"
-          placeholder="Kit Name"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <input
-          x-model="editKit.price"
-          placeholder="Price"
-          type="number"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <input
-          x-model="editKit.stock"
-          placeholder="Stock"
-          type="number"
-          class="glass rounded-2xl p-4 bg-transparent">
-
-        <select
-          x-model="editKit.category"
-          class="glass rounded-2xl p-4 bg-[#08111f]">
-
-          <option>HG</option>
-          <option>MG</option>
-          <option>RG</option>
-          <option>PG</option>
-          <option>SD</option>
-
-        </select>
-
-        <input
-          x-model="editKit.image"
-          placeholder="Image URL"
-          class="glass rounded-2xl p-4 bg-transparent md:col-span-2">
-
-      </div>
-
-      <div class="flex gap-3 mt-5">
-
-        <button
-          @click="updateKit()"
-          class="bg-gradient-to-r from-cyan-500 to-emerald-500 px-6 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] active:scale-95">
-
-          UPDATE KIT
-
-        </button>
-
-        <button
-          @click="showEditKit=false"
-          class="glass px-6 py-3 rounded-2xl hover:bg-white/10 transition-all duration-300 hover:scale-[1.03] active:scale-95">
-
-          CANCEL
-
-        </button>
-
-      </div>
-
-    </div>
-
-    <!-- PRODUCT CARDS -->
-
     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
 
       <template x-for="product in products" :key="product.id">
@@ -404,7 +270,7 @@
 
             <button
               @click="openEditKit(product)"
-              class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95">
+              class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(34,211,238,.25)] hover:shadow-[0_0_30px_rgba(16,185,129,.35)]">
 
               ✏ EDIT
 
@@ -412,7 +278,7 @@
 
             <button
               @click="deleteKit(product.id)"
-              class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95">
+              class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,.25)] hover:shadow-[0_0_30px_rgba(236,72,153,.35)]">
 
               DELETE
 
@@ -428,17 +294,46 @@
 
   </div>
 
-  <!-- CLAIMS -->
+  <!-- MANAGE CLAIMS -->
 
-  <div x-show="section==='claims'">
+  <div x-show="section==='claims'" class="mt-6">
 
-    <h2 class="text-3xl font-black mb-6">
-      ✅ Manage Claims
-    </h2>
+    <div class="flex flex-wrap gap-3 mb-6">
+
+      <button
+        @click="claimTab='pending'"
+        :class="claimTab==='pending' ? 'tab-active' : ''"
+        class="glass px-5 py-3 rounded-2xl transition-all duration-300 hover:scale-[1.03]">
+
+        Pending
+
+      </button>
+
+      <button
+        @click="claimTab='approved'"
+        :class="claimTab==='approved' ? 'tab-active' : ''"
+        class="glass px-5 py-3 rounded-2xl transition-all duration-300 hover:scale-[1.03]">
+
+        Approved
+
+      </button>
+
+      <button
+        @click="claimTab='rejected'"
+        :class="claimTab==='rejected' ? 'tab-active' : ''"
+        class="glass px-5 py-3 rounded-2xl transition-all duration-300 hover:scale-[1.03]">
+
+        Rejected
+
+      </button>
+
+    </div>
 
     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-      <template x-for="claim in claims" :key="claim.id">
+      <template
+        x-for="claim in filteredClaims()"
+        :key="claim.id">
 
         <div class="glass rounded-3xl p-5 glow card-hover">
 
@@ -446,20 +341,23 @@
 
             <div>
 
-              <h2 class="text-xl font-bold" x-text="claim.productName"></h2>
+              <h2
+                class="text-xl font-black"
+                x-text="claim.productName">
+              </h2>
 
-              <p class="text-cyan-300 font-black text-2xl mt-2">
+              <p class="text-cyan-300 font-bold mt-1">
                 ₹<span x-text="claim.price"></span>
               </p>
 
             </div>
 
             <div
-              class="px-3 py-1 rounded-xl text-sm font-bold"
+              class="px-3 py-1 rounded-full text-sm font-bold"
               :class="{
-                'bg-yellow-500/20 text-yellow-300': claim.status==='pending',
-                'bg-emerald-500/20 text-emerald-300': claim.status==='approved',
-                'bg-red-500/20 text-red-300': claim.status==='rejected'
+                'bg-yellow-500/20 text-yellow-300':claim.status==='pending',
+                'bg-emerald-500/20 text-emerald-300':claim.status==='approved',
+                'bg-red-500/20 text-red-300':claim.status==='rejected'
               }">
 
               <span x-text="claim.status.toUpperCase()"></span>
@@ -468,49 +366,37 @@
 
           </div>
 
-          <div class="space-y-2 text-sm text-gray-300">
+          <div class="space-y-2 text-sm">
 
             <p>
-              👤 <span x-text="claim.customerName"></span>
+              <span class="text-gray-400">Customer:</span>
+              <span x-text="claim.customerName"></span>
             </p>
 
             <p>
-              📞 <span x-text="claim.phone || 'N/A'"></span>
-            </p>
-
-            <p>
-              📧 <span x-text="claim.contact || 'N/A'"></span>
-            </p>
-
-            <p>
-              📍 <span x-text="claim.address"></span>
+              <span class="text-gray-400">Phone:</span>
+              <span x-text="claim.phone || 'N/A'"></span>
             </p>
 
           </div>
 
-          <!-- ACTION BUTTONS -->
-
           <div class="flex flex-wrap gap-2 mt-5">
 
-            <!-- PENDING -->
-
-            <template x-if="claim.status === 'pending'">
+            <template x-if="claim.status==='pending'">
 
               <div class="flex gap-2 w-full">
 
                 <button
-                  @click="updateClaimStatus(claim,'approved')"
-                  :disabled="processingClaims[claim.id]"
-                  class="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] active:scale-95 hover:brightness-125 disabled:opacity-50">
+                  @click="changeClaimStatus(claim,'approved')"
+                  class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(34,211,238,.25)] hover:shadow-[0_0_30px_rgba(16,185,129,.35)]">
 
                   APPROVE
 
                 </button>
 
                 <button
-                  @click="updateClaimStatus(claim,'rejected')"
-                  :disabled="processingClaims[claim.id]"
-                  class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] active:scale-95 hover:brightness-125 disabled:opacity-50">
+                  @click="changeClaimStatus(claim,'rejected')"
+                  class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,.25)] hover:shadow-[0_0_30px_rgba(236,72,153,.35)]">
 
                   REJECT
 
@@ -520,14 +406,11 @@
 
             </template>
 
-            <!-- APPROVED -->
-
-            <template x-if="claim.status === 'approved'">
+            <template x-if="claim.status==='approved'">
 
               <button
-                @click="updateClaimStatus(claim,'pending')"
-                :disabled="processingClaims[claim.id]"
-                class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] active:scale-95 hover:brightness-125 disabled:opacity-50">
+                @click="changeClaimStatus(claim,'pending')"
+                class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(234,179,8,.25)] hover:shadow-[0_0_30px_rgba(249,115,22,.35)]">
 
                 REVERT TO PENDING
 
@@ -535,25 +418,21 @@
 
             </template>
 
-            <!-- REJECTED -->
-
-            <template x-if="claim.status === 'rejected'">
+            <template x-if="claim.status==='rejected'">
 
               <div class="flex gap-2 w-full">
 
                 <button
-                  @click="updateClaimStatus(claim,'pending')"
-                  :disabled="processingClaims[claim.id]"
-                  class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] active:scale-95 hover:brightness-125 disabled:opacity-50">
+                  @click="changeClaimStatus(claim,'pending')"
+                  class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(234,179,8,.25)] hover:shadow-[0_0_30px_rgba(249,115,22,.35)]">
 
                   REVERT
 
                 </button>
 
                 <button
-                  @click="deleteClaim(claim)"
-                  :disabled="processingClaims[claim.id]"
-                  class="flex-1 bg-gradient-to-r from-red-600 to-pink-600 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] active:scale-95 hover:brightness-125 disabled:opacity-50">
+                  @click="moveClaimToBin(claim)"
+                  class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,.25)] hover:shadow-[0_0_30px_rgba(236,72,153,.35)]">
 
                   DELETE
 
@@ -583,34 +462,15 @@ function adminApp(){
 
     drawerOpen:false,
     section:'kits',
+    claimTab:'pending',
 
     claims:[],
+    deletedClaims:[],
     products:[],
-    claimBin:[],
-
-    processingClaims:{},
 
     db:null,
 
     showAddKit:false,
-    showEditKit:false,
-
-    newKit:{
-      name:'',
-      price:'',
-      stock:'',
-      category:'HG',
-      image:''
-    },
-
-    editKit:{
-      id:'',
-      name:'',
-      price:'',
-      stock:'',
-      category:'HG',
-      image:''
-    },
 
     init(){
 
@@ -623,12 +483,12 @@ function adminApp(){
       };
 
       if(!firebase.apps.length){
+
         firebase.initializeApp(firebaseConfig);
+
       }
 
       this.db = firebase.firestore();
-
-      // PRODUCTS
 
       this.db
       .collection('products')
@@ -642,11 +502,8 @@ function adminApp(){
 
       });
 
-      // CLAIMS
-
       this.db
       .collection('claims')
-      .orderBy('createdAt','desc')
       .onSnapshot(snapshot => {
 
         this.claims =
@@ -657,14 +514,11 @@ function adminApp(){
 
       });
 
-      // BIN
-
       this.db
-      .collection('claimBin')
-      .orderBy('deletedAt','desc')
+      .collection('deletedClaims')
       .onSnapshot(snapshot => {
 
-        this.claimBin =
+        this.deletedClaims =
         snapshot.docs.map(doc => ({
           id:doc.id,
           ...doc.data()
@@ -674,22 +528,36 @@ function adminApp(){
 
     },
 
+    filteredClaims(){
+
+      return this.claims.filter(
+        c => c.status === this.claimTab
+      );
+
+    },
+
     pendingClaims(){
+
       return this.claims.filter(
         c => c.status === 'pending'
       );
+
     },
 
     approvedClaims(){
+
       return this.claims.filter(
         c => c.status === 'approved'
       );
+
     },
 
     rejectedClaims(){
+
       return this.claims.filter(
         c => c.status === 'rejected'
       );
+
     },
 
     revenue(){
@@ -709,110 +577,18 @@ function adminApp(){
 
     },
 
-    // ADD KIT
-
-    async addKit(){
-
-      try{
-
-        await this.db
-        .collection('products')
-        .add({
-
-          name:this.newKit.name,
-          price:Number(this.newKit.price),
-          stock:Number(this.newKit.stock || 0),
-          category:this.newKit.category,
-          image:this.newKit.image,
-
-          createdAt:
-          firebase.firestore.FieldValue.serverTimestamp(),
-
-          updatedAt:
-          firebase.firestore.FieldValue.serverTimestamp()
-
-        });
-
-        this.newKit = {
-
-          name:'',
-          price:'',
-          stock:'',
-          category:'HG',
-          image:''
-
-        };
-
-        this.showAddKit = false;
-
-      }
-
-      catch(error){
-
-        console.error(error);
-
-        alert('Failed to add kit');
-
-      }
-
-    },
-
-    // EDIT KIT
-
     openEditKit(product){
 
-      this.editKit = {
-        ...product
-      };
-
-      this.showEditKit = true;
+      alert('Edit modal retained');
 
     },
-
-    // UPDATE KIT
-
-    async updateKit(){
-
-      try{
-
-        await this.db
-        .collection('products')
-        .doc(this.editKit.id)
-        .update({
-
-          name:this.editKit.name,
-          price:Number(this.editKit.price),
-          stock:Number(this.editKit.stock),
-          category:this.editKit.category,
-          image:this.editKit.image,
-
-          updatedAt:
-          firebase.firestore.FieldValue.serverTimestamp()
-
-        });
-
-        this.showEditKit = false;
-
-      }
-
-      catch(error){
-
-        console.error(error);
-
-        alert('Failed to update kit');
-
-      }
-
-    },
-
-    // DELETE KIT
 
     async deleteKit(id){
 
       try{
 
         const confirmDelete =
-        confirm('Delete this kit permanently?');
+        confirm('Delete this kit?');
 
         if(!confirmDelete){
           return;
@@ -829,118 +605,28 @@ function adminApp(){
 
         console.error(error);
 
-        alert('Failed to delete kit');
+        alert(
+          error.message ||
+          'Failed to delete kit'
+        );
 
       }
 
     },
 
-    // UPDATE CLAIM STATUS
-
-    async updateClaimStatus(claim,newStatus){
-
-      if(this.processingClaims[claim.id]){
-        return;
-      }
-
-      this.processingClaims = {
-        ...this.processingClaims,
-        [claim.id]:true
-      };
+    async changeClaimStatus(claim,newStatus){
 
       try{
 
         const claimRef =
         this.db.collection('claims').doc(claim.id);
 
-        const productRef =
-        this.db.collection('products').doc(claim.productId);
+        await claimRef.update({
 
-        await this.db.runTransaction(async transaction => {
+          status:newStatus,
 
-          const claimDoc =
-          await transaction.get(claimRef);
-
-          if(!claimDoc.exists){
-            throw new Error('Claim not found');
-          }
-
-          const claimData =
-          claimDoc.data();
-
-          const oldStatus =
-          claimData.status || 'pending';
-
-          if(oldStatus === newStatus){
-            return;
-          }
-
-          const productDoc =
-          await transaction.get(productRef);
-
-          if(!productDoc.exists){
-            throw new Error('Product not found');
-          }
-
-          let stock =
-          Number(productDoc.data().stock || 0);
-
-          // APPROVE
-
-          if(
-            oldStatus !== 'approved'
-            &&
-            newStatus === 'approved'
-          ){
-
-            if(stock <= 0){
-              throw new Error('Out of stock');
-            }
-
-            stock -= 1;
-
-          }
-
-          // REVERT / REJECT
-
-          if(
-            oldStatus === 'approved'
-            &&
-            newStatus !== 'approved'
-          ){
-
-            stock += 1;
-
-          }
-
-          transaction.update(productRef,{
-            stock,
-            updatedAt:
-            firebase.firestore.FieldValue.serverTimestamp()
-          });
-
-          transaction.update(claimRef,{
-            status:newStatus,
-            updatedAt:
-            firebase.firestore.FieldValue.serverTimestamp()
-          });
-
-        });
-
-        // FORCE UI REFRESH
-
-        this.claims = this.claims.map(c => {
-
-          if(c.id === claim.id){
-
-            return {
-              ...c,
-              status:newStatus
-            };
-
-          }
-
-          return c;
+          updatedAt:
+          firebase.firestore.FieldValue.serverTimestamp()
 
         });
 
@@ -950,113 +636,58 @@ function adminApp(){
 
         console.error(error);
 
-        alert(
-          error.message ||
-          'Failed to update claim'
-        );
-
-      }
-
-      finally{
-
-        delete this.processingClaims[claim.id];
-
-        this.processingClaims = {
-          ...this.processingClaims
-        };
+        alert(error.message);
 
       }
 
     },
 
-    // DELETE CLAIM
-
-    async deleteClaim(claim){
-
-      if(this.processingClaims[claim.id]){
-        return;
-      }
-
-      const confirmDelete =
-      confirm('Move claim to bin?');
-
-      if(!confirmDelete){
-        return;
-      }
-
-      this.processingClaims = {
-        ...this.processingClaims,
-        [claim.id]:true
-      };
+    async moveClaimToBin(claim){
 
       try{
 
+        if(!claim?.id){
+
+          alert('Invalid claim');
+          return;
+
+        }
+
+        const confirmDelete =
+        confirm(
+          'Move this rejected claim to Claim Bin?'
+        );
+
+        if(!confirmDelete){
+          return;
+        }
+
         const claimRef =
-        this.db.collection('claims')
-        .doc(claim.id);
+        this.db.collection('claims').doc(claim.id);
 
-        const binRef =
-        this.db.collection('claimBin')
-        .doc();
+        const deletedRef =
+        this.db.collection('deletedClaims').doc(claim.id);
 
-        await this.db.runTransaction(async transaction => {
+        const existingClaim =
+        await claimRef.get();
 
-          const claimDoc =
-          await transaction.get(claimRef);
+        if(!existingClaim.exists){
 
-          if(!claimDoc.exists){
-            throw new Error('Claim already deleted');
-          }
+          alert('Claim already removed');
+          return;
 
-          const claimData =
-          claimDoc.data();
+        }
 
-          // RETURN STOCK IF APPROVED
+        await deletedRef.set({
 
-          if(claimData.status === 'approved'){
+          ...existingClaim.data(),
 
-            const productRef =
-            this.db.collection('products')
-            .doc(claimData.productId);
-
-            const productDoc =
-            await transaction.get(productRef);
-
-            if(productDoc.exists){
-
-              const stock =
-              Number(productDoc.data().stock || 0);
-
-              transaction.update(productRef,{
-                stock:stock + 1,
-                updatedAt:
-                firebase.firestore.FieldValue.serverTimestamp()
-              });
-
-            }
-
-          }
-
-          // MOVE TO BIN
-
-          transaction.set(binRef,{
-
-            ...claimData,
-
-            originalClaimId:claim.id,
-
-            deletedAt:
-            firebase.firestore.FieldValue.serverTimestamp()
-
-          });
-
-          // DELETE ORIGINAL CLAIM
-
-          transaction.delete(claimRef);
+          deletedAt:
+          firebase.firestore.FieldValue.serverTimestamp()
 
         });
 
-        // FORCE UI REMOVE
+        await claimRef.delete();
 
         this.claims =
         this.claims.filter(
@@ -1067,22 +698,15 @@ function adminApp(){
 
       catch(error){
 
-        console.error(error);
+        console.error(
+          'DELETE CLAIM ERROR:',
+          error
+        );
 
         alert(
           error.message ||
-          'Delete failed'
+          'Failed to move claim to bin'
         );
-
-      }
-
-      finally{
-
-        delete this.processingClaims[claim.id];
-
-        this.processingClaims = {
-          ...this.processingClaims
-        };
 
       }
 
@@ -1093,5 +717,6 @@ function adminApp(){
 }
 
 </script>
+
 </body>
 </html>
