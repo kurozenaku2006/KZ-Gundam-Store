@@ -366,16 +366,24 @@
 
           </div>
 
-          <div class="space-y-2 text-sm">
+           </div>
+
+          <div class="space-y-2 text-sm text-gray-300">
 
             <p>
-              <span class="text-gray-400">Customer:</span>
-              <span x-text="claim.customerName"></span>
+              👤 <span x-text="claim.customerName"></span>
             </p>
 
             <p>
-              <span class="text-gray-400">Phone:</span>
-              <span x-text="claim.phone || 'N/A'"></span>
+              📞 <span x-text="claim.phone || 'N/A'"></span>
+            </p>
+
+            <p>
+              📧 <span x-text="claim.contact || 'N/A'"></span>
+            </p>
+
+            <p>
+              📍 <span x-text="claim.address"></span>
             </p>
 
           </div>
