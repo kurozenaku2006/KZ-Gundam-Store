@@ -97,11 +97,11 @@
     <div>
 
       <h1 class="logo-font text-3xl md:text-4xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-        KUROZENAKU
+        KZ 
       </h1>
 
       <p class="text-gray-400 text-sm mt-1">
-        Premium Gundam Catalog
+         Gundam Catalog
       </p>
 
     </div>
@@ -625,31 +625,6 @@ function app(){
 
         const db = firebase.firestore();
 
-        const productRef =
-        db.collection('products').doc(p.id);
-
-        const productDoc =
-        await productRef.get();
-
-        const currentStock =
-        productDoc.data().stock || 0;
-
-        if(currentStock <= 0){
-
-          this.claimLoading = false;
-
-          this.pending[p.id] = false;
-
-          return;
-
-        }
-
-        await productRef.update({
-
-          stock: currentStock - 1
-
-        });
-
         await db.collection('claims').add({
 
           productId:p.id,
@@ -657,8 +632,6 @@ function app(){
           productName:p.name,
 
           price:p.price,
-
-          status:'pending',
 
           customerName:this.claimForm.name,
 
@@ -668,21 +641,20 @@ function app(){
 
           note:this.claimForm.note || '',
 
-          createdAt:new Date()
+          status:'pending',
+
+          createdAt:new Date(),
+          updatedAt:new Date()
 
         });
 
-        p.stock = currentStock - 1;
+        this.claimModal = false;
 
-        setTimeout(()=>{
+        this.claimLoading = false;
 
-          this.claimModal = false;
+        this.pending[p.id] = false;
 
-          this.claimLoading = false;
-
-          this.pending[p.id] = false;
-
-        },1000);
+        alert('Claim submitted successfully');
 
       }
 
@@ -744,4 +716,3 @@ function app(){
 
 </body>
 </html>
-
