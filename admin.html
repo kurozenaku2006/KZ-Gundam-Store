@@ -901,7 +901,7 @@ function adminApp(){
 
     },
 
-    async deleteClaim(claim){
+    async moveClaimToBin(claim){
 
       if(this.processingClaims[claim.id]){
         return;
