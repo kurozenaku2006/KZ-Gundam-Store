@@ -530,149 +530,98 @@
 
           </div>
 
-        <!-- ACTION BUTTONS -->
+          <!-- ACTION BUTTONS -->
 
-<div class="flex flex-wrap gap-2 mt-5">
+          <div class="flex flex-wrap gap-2 mt-5">
 
-  <!-- PENDING -->
+            <!-- PENDING -->
 
-  <template x-if="claim.status === 'pending'">
+            <template x-if="claim.status === 'pending'">
 
-    <div class="flex gap-2 w-full">
+              <div class="flex gap-2 w-full">
 
-      <button
-        @click="updateClaimStatus(claim,'approved')"
-        :disabled="processingClaims[claim.id]"
-        class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-3 rounded-2xl font-bold
-        transition-all duration-300
-        hover:scale-[1.04]
-        hover:brightness-125
-        active:scale-95
-        cursor-pointer
-        shadow-[0_0_20px_rgba(34,211,238,.25)]
-        hover:shadow-[0_0_35px_rgba(16,185,129,.45)]
-        disabled:opacity-50 disabled:cursor-not-allowed">
+                <button
+                  @click="updateClaimStatus(claim,'approved')"
+                  class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-3 rounded-2xl font-bold">
 
-        <span x-show="!processingClaims[claim.id]">
-          APPROVE
-        </span>
+                  APPROVE
 
-        <span x-show="processingClaims[claim.id]">
-          PROCESSING...
-        </span>
+                </button>
 
-      </button>
+                <button
+                  @click="updateClaimStatus(claim,'rejected')"
+                  class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold">
 
-      <button
-        @click="updateClaimStatus(claim,'rejected')"
-        :disabled="processingClaims[claim.id]"
-        class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold
-        transition-all duration-300
-        hover:scale-[1.04]
-        hover:brightness-125
-        active:scale-95
-        cursor-pointer
-        shadow-[0_0_20px_rgba(239,68,68,.25)]
-        hover:shadow-[0_0_35px_rgba(236,72,153,.45)]
-        disabled:opacity-50 disabled:cursor-not-allowed">
+                  REJECT
 
-        REJECT
+                </button>
 
-      </button>
+              </div>
 
-    </div>
+            </template>
 
-  </template>
+            <!-- APPROVED -->
 
-  <!-- APPROVED -->
+            <template x-if="claim.status === 'approved'">
 
-  <template x-if="claim.status === 'approved'">
+              <div class="flex gap-2 w-full">
 
-    <div class="flex gap-2 w-full">
+                <button
+                  @click="updateClaimStatus(claim,'pending')"
+                  class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold">
 
-      <button
-        @click="updateClaimStatus(claim,'pending')"
-        :disabled="processingClaims[claim.id]"
-        class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold
-        transition-all duration-300
-        hover:scale-[1.04]
-        hover:brightness-125
-        active:scale-95
-        cursor-pointer
-        shadow-[0_0_20px_rgba(234,179,8,.25)]
-        hover:shadow-[0_0_35px_rgba(249,115,22,.45)]
-        disabled:opacity-50 disabled:cursor-not-allowed">
+                  REVERT
 
-        REVERT
+                </button>
 
-      </button>
+                <button
+                  @click="updateClaimStatus(claim,'rejected')"
+                  class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold">
 
-      <button
-        @click="updateClaimStatus(claim,'rejected')"
-        :disabled="processingClaims[claim.id]"
-        class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold
-        transition-all duration-300
-        hover:scale-[1.04]
-        hover:brightness-125
-        active:scale-95
-        cursor-pointer
-        shadow-[0_0_20px_rgba(239,68,68,.25)]
-        hover:shadow-[0_0_35px_rgba(236,72,153,.45)]
-        disabled:opacity-50 disabled:cursor-not-allowed">
+                  REJECT
 
-        REJECT
+                </button>
 
-      </button>
+              </div>
+
+            </template>
+
+            <!-- REJECTED -->
+
+            <template x-if="claim.status === 'rejected'">
+
+              <div class="flex gap-2 w-full">
+
+                <button
+                  @click="updateClaimStatus(claim,'pending')"
+                  class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold">
+
+                  REVERT
+
+                </button>
+
+                <button
+                  @click="moveClaimToBin(claim)"
+                  class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold">
+
+                  DELETE
+
+                </button>
+
+              </div>
+
+            </template>
+
+          </div>
+
+        </div>
+
+      </template>
 
     </div>
 
-  </template>
+  </div>
 
-  <!-- REJECTED -->
-
-  <template x-if="claim.status === 'rejected'">
-
-    <div class="flex gap-2 w-full">
-
-      <button
-        @click="updateClaimStatus(claim,'pending')"
-        :disabled="processingClaims[claim.id]"
-        class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold
-        transition-all duration-300
-        hover:scale-[1.04]
-        hover:brightness-125
-        active:scale-95
-        cursor-pointer
-        shadow-[0_0_20px_rgba(234,179,8,.25)]
-        hover:shadow-[0_0_35px_rgba(249,115,22,.45)]
-        disabled:opacity-50 disabled:cursor-not-allowed">
-
-        REVERT
-
-      </button>
-
-      <button
-        @click="moveClaimToBin(claim)"
-        :disabled="processingClaims[claim.id]"
-        class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold
-        transition-all duration-300
-        hover:scale-[1.04]
-        hover:brightness-125
-        active:scale-95
-        cursor-pointer
-        shadow-[0_0_20px_rgba(239,68,68,.25)]
-        hover:shadow-[0_0_35px_rgba(236,72,153,.45)]
-        disabled:opacity-50 disabled:cursor-not-allowed">
-
-        DELETE
-
-      </button>
-
-    </div>
-
-  </template>
-
-</div>
   <!-- CLAIM BIN -->
 
   <div x-show="section==='bin'">
