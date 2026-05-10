@@ -243,7 +243,8 @@
       <button
         @click="claimFilter='all'"
         :class="claimFilter==='all' ? 'tab-active' : 'glass'"
-class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer hover:brightness-125"
+        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer">
+
         ALL
         (<span x-text="claims.length"></span>)
 
@@ -252,7 +253,8 @@ class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-1
       <button
         @click="claimFilter='pending'"
         :class="claimFilter==='pending' ? 'tab-active' : 'glass'"
-class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer hover:brightness-125"
+        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer">
+
         PENDING
         (<span x-text="pendingClaims().length"></span>)
 
@@ -261,7 +263,7 @@ class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-1
       <button
         @click="claimFilter='approved'"
         :class="claimFilter==='approved' ? 'tab-active' : 'glass'"
-       class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer hover:brightness-125"
+        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer">
 
         APPROVED
         (<span x-text="approvedClaims().length"></span>)
@@ -271,7 +273,8 @@ class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-1
       <button
         @click="claimFilter='rejected'"
         :class="claimFilter==='rejected' ? 'tab-active' : 'glass'"
-class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer hover:brightness-125"
+        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer">
+
         REJECTED
         (<span x-text="rejectedClaims().length"></span>)
 
