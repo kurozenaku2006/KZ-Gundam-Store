@@ -90,11 +90,11 @@
     <div>
 
       <h1 class="logo-font text-3xl md:text-4xl font-black bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-        KZ ADMIN 
+        KZ ADMIN
       </h1>
 
       <p class="text-gray-400 text-sm mt-1">
-          ADMIN DASHBOARD 
+        ADMIN DASHBOARD
       </p>
 
     </div>
@@ -402,21 +402,22 @@
 
           <div class="flex gap-2 mt-4">
 
-           <button
-  @click="openEditKit(product)"
-  class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(34,211,238,.25)] hover:shadow-[0_0_30px_rgba(16,185,129,.35)]">
+            <button
+              @click="openEditKit(product)"
+              class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95">
 
-  ✏ EDIT
+              ✏ EDIT
 
-</button>
+            </button>
 
-<button
-  @click="deleteKit(product.id)"
-  class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,.25)] hover:shadow-[0_0_30px_rgba(236,72,153,.35)]">
+            <button
+              @click="deleteKit(product.id)"
+              class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95">
 
-  DELETE
+              DELETE
 
-</button>
+            </button>
+
           </div>
 
         </div>
@@ -435,9 +436,51 @@
       ✅ Manage Claims
     </h2>
 
+    <!-- FILTER BUTTONS -->
+
+    <div class="flex flex-wrap gap-3 mb-6">
+
+      <button
+        @click="claimFilter='all'"
+        :class="claimFilter==='all' ? 'tab-active' : 'glass'"
+        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300">
+
+        ALL (<span x-text="claims.length"></span>)
+
+      </button>
+
+      <button
+        @click="claimFilter='pending'"
+        :class="claimFilter==='pending' ? 'tab-active' : 'glass'"
+        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300">
+
+        PENDING (<span x-text="pendingClaims().length"></span>)
+
+      </button>
+
+      <button
+        @click="claimFilter='approved'"
+        :class="claimFilter==='approved' ? 'tab-active' : 'glass'"
+        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300">
+
+        APPROVED (<span x-text="approvedClaims().length"></span>)
+
+      </button>
+
+      <button
+        @click="claimFilter='rejected'"
+        :class="claimFilter==='rejected' ? 'tab-active' : 'glass'"
+        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300">
+
+        REJECTED (<span x-text="rejectedClaims().length"></span>)
+
+      </button>
+
+    </div>
+
     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-      <template x-for="claim in claims" :key="claim.id">
+      <template x-for="claim in filteredClaims()" :key="claim.id">
 
         <div class="glass rounded-3xl p-5 glow card-hover">
 
@@ -487,79 +530,308 @@
 
           </div>
 
-          <!-- ACTION BUTTONS -->
+        <!-- ACTION BUTTONS -->
 
-          <div class="flex flex-wrap gap-2 mt-5">
+<div class="flex flex-wrap gap-2 mt-5">
 
-            <!-- PENDING -->
+  <!-- PENDING -->
 
-            <template x-if="claim.status === 'pending'">
+  <template x-if="claim.status === 'pending'">
 
-              <div class="flex gap-2 w-full">
+    <div class="flex gap-2 w-full">
 
-               <button
-  @click="updateClaimStatus(claim,'approved')"
-  class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(34,211,238,.25)] hover:shadow-[0_0_30px_rgba(16,185,129,.35)]">
+      <button
+        @click="updateClaimStatus(claim,'approved')"
+        :disabled="processingClaims[claim.id]"
+        class="flex-1 bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-3 rounded-2xl font-bold
+        transition-all duration-300
+        hover:scale-[1.04]
+        hover:brightness-125
+        active:scale-95
+        cursor-pointer
+        shadow-[0_0_20px_rgba(34,211,238,.25)]
+        hover:shadow-[0_0_35px_rgba(16,185,129,.45)]
+        disabled:opacity-50 disabled:cursor-not-allowed">
 
-  APPROVE
+        <span x-show="!processingClaims[claim.id]">
+          APPROVE
+        </span>
 
-</button>
+        <span x-show="processingClaims[claim.id]">
+          PROCESSING...
+        </span>
 
-<button
-  @click="updateClaimStatus(claim,'rejected')"
-  class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,.25)] hover:shadow-[0_0_30px_rgba(236,72,153,.35)]">
+      </button>
 
-  REJECT
+      <button
+        @click="updateClaimStatus(claim,'rejected')"
+        :disabled="processingClaims[claim.id]"
+        class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold
+        transition-all duration-300
+        hover:scale-[1.04]
+        hover:brightness-125
+        active:scale-95
+        cursor-pointer
+        shadow-[0_0_20px_rgba(239,68,68,.25)]
+        hover:shadow-[0_0_35px_rgba(236,72,153,.45)]
+        disabled:opacity-50 disabled:cursor-not-allowed">
 
-</button>
-              </div>
+        REJECT
 
-            </template>
+      </button>
 
-            <!-- APPROVED -->
+    </div>
 
-            <template x-if="claim.status === 'approved'">
+  </template>
 
-             <button
-  @click="updateClaimStatus(claim,'pending')"
-  class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(234,179,8,.25)] hover:shadow-[0_0_30px_rgba(249,115,22,.35)]">
+  <!-- APPROVED -->
 
-  REVERT TO PENDING
+  <template x-if="claim.status === 'approved'">
 
-</button>
+    <div class="flex gap-2 w-full">
 
-            </template>
+      <button
+        @click="updateClaimStatus(claim,'pending')"
+        :disabled="processingClaims[claim.id]"
+        class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold
+        transition-all duration-300
+        hover:scale-[1.04]
+        hover:brightness-125
+        active:scale-95
+        cursor-pointer
+        shadow-[0_0_20px_rgba(234,179,8,.25)]
+        hover:shadow-[0_0_35px_rgba(249,115,22,.45)]
+        disabled:opacity-50 disabled:cursor-not-allowed">
 
-            <!-- REJECTED -->
+        REVERT
 
-            <template x-if="claim.status === 'rejected'">
+      </button>
 
-              <div class="flex gap-2 w-full">
+      <button
+        @click="updateClaimStatus(claim,'rejected')"
+        :disabled="processingClaims[claim.id]"
+        class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold
+        transition-all duration-300
+        hover:scale-[1.04]
+        hover:brightness-125
+        active:scale-95
+        cursor-pointer
+        shadow-[0_0_20px_rgba(239,68,68,.25)]
+        hover:shadow-[0_0_35px_rgba(236,72,153,.45)]
+        disabled:opacity-50 disabled:cursor-not-allowed">
 
-              <button
-  @click="updateClaimStatus(claim,'pending')"
-  class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(234,179,8,.25)] hover:shadow-[0_0_30px_rgba(249,115,22,.35)]">
+        REJECT
 
-  REVERT
+      </button>
 
-</button>
+    </div>
 
-<button
-  @click="moveClaimToBin(claim)"
-  class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-[1.03] hover:brightness-125 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,.25)] hover:shadow-[0_0_30px_rgba(236,72,153,.35)]">
+  </template>
 
-  DELETE
+  <!-- REJECTED -->
 
-</button>
-              </div>
+  <template x-if="claim.status === 'rejected'">
 
-            </template>
+    <div class="flex gap-2 w-full">
+
+      <button
+        @click="updateClaimStatus(claim,'pending')"
+        :disabled="processingClaims[claim.id]"
+        class="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 px-4 py-3 rounded-2xl font-bold
+        transition-all duration-300
+        hover:scale-[1.04]
+        hover:brightness-125
+        active:scale-95
+        cursor-pointer
+        shadow-[0_0_20px_rgba(234,179,8,.25)]
+        hover:shadow-[0_0_35px_rgba(249,115,22,.45)]
+        disabled:opacity-50 disabled:cursor-not-allowed">
+
+        REVERT
+
+      </button>
+
+      <button
+        @click="moveClaimToBin(claim)"
+        :disabled="processingClaims[claim.id]"
+        class="flex-1 bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 rounded-2xl font-bold
+        transition-all duration-300
+        hover:scale-[1.04]
+        hover:brightness-125
+        active:scale-95
+        cursor-pointer
+        shadow-[0_0_20px_rgba(239,68,68,.25)]
+        hover:shadow-[0_0_35px_rgba(236,72,153,.45)]
+        disabled:opacity-50 disabled:cursor-not-allowed">
+
+        DELETE
+
+      </button>
+
+    </div>
+
+  </template>
+
+</div>
+  <!-- CLAIM BIN -->
+
+  <div x-show="section==='bin'">
+
+    <div class="flex justify-between items-center mb-6">
+
+      <h2 class="text-3xl font-black">
+        🗑 Claim Bin
+      </h2>
+
+      <div class="text-gray-400 text-sm">
+        Deleted Claims:
+        <span x-text="claimBin.length"></span>
+      </div>
+
+    </div>
+
+    <div
+      x-show="claimBin.length === 0"
+      class="glass rounded-3xl p-8 text-center text-gray-400">
+
+      No deleted claims
+
+    </div>
+
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+
+      <template x-for="claim in claimBin" :key="claim.id">
+
+        <div class="glass rounded-3xl p-5 glow card-hover opacity-80">
+
+          <div class="flex justify-between items-start mb-4">
+
+            <div>
+
+              <h2
+                class="text-xl font-bold"
+                x-text="claim.productName">
+              </h2>
+
+              <p class="text-cyan-300 font-black text-2xl mt-2">
+                ₹<span x-text="claim.price"></span>
+              </p>
+
+            </div>
+
+            <div class="px-3 py-1 rounded-xl text-sm font-bold bg-red-500/20 text-red-300">
+
+              DELETED
+
+            </div>
+
+          </div>
+
+          <div class="space-y-2 text-sm text-gray-300">
+
+            <p>
+              👤
+              <span x-text="claim.customerName"></span>
+            </p>
+
+            <p>
+              📧
+              <span x-text="claim.contact || 'N/A'"></span>
+            </p>
+
+            <p>
+              📍
+              <span x-text="claim.address"></span>
+            </p>
+
+            <p>
+              📌 Status Before Delete:
+              <span
+                class="font-bold"
+                x-text="claim.status">
+              </span>
+            </p>
 
           </div>
 
         </div>
 
       </template>
+
+    </div>
+
+  </div>
+
+  <!-- ANALYSIS -->
+
+  <div x-show="section==='analysis'">
+
+    <h2 class="text-3xl font-black mb-6">
+      📊 Analysis
+    </h2>
+
+    <div class="grid md:grid-cols-2 gap-5">
+
+      <div class="glass rounded-3xl p-6 glow">
+
+        <h3 class="text-2xl font-bold mb-4">
+          Claim Overview
+        </h3>
+
+        <div class="space-y-4">
+
+          <div class="flex justify-between">
+            <span>Total Claims</span>
+            <span class="font-bold" x-text="claims.length"></span>
+          </div>
+
+          <div class="flex justify-between">
+            <span>Pending</span>
+            <span class="font-bold text-yellow-300" x-text="pendingClaims().length"></span>
+          </div>
+
+          <div class="flex justify-between">
+            <span>Approved</span>
+            <span class="font-bold text-emerald-300" x-text="approvedClaims().length"></span>
+          </div>
+
+          <div class="flex justify-between">
+            <span>Rejected</span>
+            <span class="font-bold text-red-300" x-text="rejectedClaims().length"></span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="glass rounded-3xl p-6 glow">
+
+        <h3 class="text-2xl font-bold mb-4">
+          Inventory Overview
+        </h3>
+
+        <div class="space-y-4">
+
+          <div class="flex justify-between">
+            <span>Total Kits</span>
+            <span class="font-bold" x-text="products.length"></span>
+          </div>
+
+          <div class="flex justify-between">
+            <span>Low Stock Kits</span>
+            <span class="font-bold text-orange-300" x-text="lowStockCount()"></span>
+          </div>
+
+          <div class="flex justify-between">
+            <span>Total Revenue</span>
+            <span class="font-bold text-cyan-300">
+              ₹<span x-text="revenue()"></span>
+            </span>
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
 
@@ -575,6 +847,7 @@ function adminApp(){
 
     drawerOpen:false,
     section:'kits',
+    claimFilter:'all',
 
     claims:[],
     products:[],
@@ -657,6 +930,24 @@ function adminApp(){
         }));
 
       });
+
+    },
+
+    filteredClaims(){
+
+      if(this.claimFilter === 'pending'){
+        return this.pendingClaims();
+      }
+
+      if(this.claimFilter === 'approved'){
+        return this.approvedClaims();
+      }
+
+      if(this.claimFilter === 'rejected'){
+        return this.rejectedClaims();
+      }
+
+      return this.claims;
 
     },
 
