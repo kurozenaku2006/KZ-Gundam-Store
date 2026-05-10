@@ -236,52 +236,7 @@
       </h2>
 
       
-    <!-- FILTER BUTTONS -->
-
-    <div class="flex flex-wrap gap-3 mb-6">
-
-      <button
-        @click="claimFilter='all'"
-        :class="claimFilter==='all' ? 'tab-active' : 'glass'"
-        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer">
-
-        ALL
-        (<span x-text="claims.length"></span>)
-
-      </button>
-
-      <button
-        @click="claimFilter='pending'"
-        :class="claimFilter==='pending' ? 'tab-active' : 'glass'"
-        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer">
-
-        PENDING
-        (<span x-text="pendingClaims().length"></span>)
-
-      </button>
-
-      <button
-        @click="claimFilter='approved'"
-        :class="claimFilter==='approved' ? 'tab-active' : 'glass'"
-        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer">
-
-        APPROVED
-        (<span x-text="approvedClaims().length"></span>)
-
-      </button>
-
-      <button
-        @click="claimFilter='rejected'"
-        :class="claimFilter==='rejected' ? 'tab-active' : 'glass'"
-        class="px-5 py-3 rounded-2xl font-bold transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer">
-
-        REJECTED
-        (<span x-text="rejectedClaims().length"></span>)
-
-      </button>
-
-    </div>
-
+   
       <button
         @click="showAddKit=true"
         class="bg-gradient-to-r from-cyan-500 to-emerald-500 px-5 py-3 rounded-2xl font-bold hover:brightness-125 transition-all duration-300 hover:scale-[1.03] active:scale-95 shadow-[0_0_20px_rgba(34,211,238,.35)]">
