@@ -229,16 +229,16 @@
 
   <div x-show="section==='kits'">
 
-    <div class="flex justify-between items-center mb-6">
-
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+  
       <h2 class="text-3xl font-black">
         📦 Manage Kits
       </h2>
       
       <!-- PRODUCT SEARCH -->
 
-<div class="mb-6">
-
+<div class="w-full lg:max-w-md">
+  
   <input
     x-model="productSearch"
     placeholder="Search kits..."
@@ -392,6 +392,14 @@
 
     <!-- PRODUCT CARDS -->
 
+ <div
+  x-show="filteredProducts().length === 0"
+  class="glass rounded-3xl p-8 text-center text-gray-400 mb-6">
+
+  No kits found
+
+</div>
+    
     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
 
 <template x-for="product in filteredProducts()" :key="product.id">
@@ -408,11 +416,33 @@
             ₹<span x-text="product.price"></span>
           </p>
 
-          <div class="text-gray-400 mt-2">
-            Stock:
-            <span x-text="product.stock"></span>
-          </div>
+         <div class="text-gray-400 mt-2">
+  
+  Stock:
+  <span x-text="product.stock"></span>
 
+</div>
+
+<!-- OUT OF STOCK -->
+
+<div
+  x-show="Number(product.stock) === 0"
+  class="mt-3 bg-red-500/20 text-red-300 px-3 py-2 rounded-xl text-sm font-bold">
+
+  ❌ OUT OF STOCK
+
+</div>
+
+<!-- LOW STOCK -->
+
+<div
+  x-show="Number(product.stock) > 0 && Number(product.stock) <= 1"
+  class="mt-3 bg-orange-500/20 text-orange-300 px-3 py-2 rounded-xl text-sm font-bold">
+
+  ⚠ LOW STOCK
+
+</div>
+          
           <div class="flex gap-2 mt-4">
 
             <button
@@ -433,6 +463,26 @@
 
           </div>
 
+          <div class="flex gap-2 mt-3 w-full">
+
+  <button
+    @click="quickRestock(product,1)"
+    class="flex-1 glass px-3 py-2 rounded-xl text-sm font-bold hover:bg-white/10">
+
+    +1 STOCK
+
+  </button>
+
+  <button
+    @click="quickRestock(product,5)"
+    class="flex-1 glass px-3 py-2 rounded-xl text-sm font-bold hover:bg-white/10">
+
+    +5 STOCK
+
+  </button>
+
+</div>
+          
         </div>
 
       </template>
@@ -447,8 +497,8 @@
 
     <!-- CLAIM SEARCH -->
 
-<div class="mb-6">
-
+<div class="w-full lg:max-w-md">
+  
   <input
     x-model="claimSearch"
     placeholder="Search claims by customer or product..."
@@ -502,6 +552,14 @@
 
     </div>
 
+    <div
+  x-show="filteredClaims().length === 0"
+  class="glass rounded-3xl p-8 text-center text-gray-400 mb-6">
+
+  No claims found
+
+</div>
+    
     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
 
       <template x-for="claim in filteredClaims()" :key="claim.id">
@@ -1119,6 +1177,33 @@ function adminApp(){
 
     },
 
+    async quickRestock(product,amount){
+
+  try{
+
+    await this.db
+    .collection('products')
+    .doc(product.id)
+    .update({
+
+      stock:Number(product.stock || 0) + amount,
+
+      updatedAt:
+      firebase.firestore.FieldValue.serverTimestamp()
+
+    });
+
+  }
+
+  catch(error){
+
+    console.error(error);
+    alert('Failed to restock');
+
+  }
+
+},
+    
     async updateClaimStatus(claim,newStatus){
 
       if(this.processingClaims[claim.id]){
