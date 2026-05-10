@@ -234,6 +234,17 @@
       <h2 class="text-3xl font-black">
         📦 Manage Kits
       </h2>
+      
+      <!-- PRODUCT SEARCH -->
+
+<div class="mb-6">
+
+  <input
+    x-model="productSearch"
+    placeholder="Search kits..."
+    class="w-full glass rounded-2xl p-4 bg-transparent text-white placeholder-gray-400">
+
+</div>
 
       
    
@@ -383,8 +394,8 @@
 
     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-      <template x-for="product in products" :key="product.id">
-
+<template x-for="product in filteredProducts()" :key="product.id">
+  
         <div class="glass rounded-3xl p-5 glow card-hover">
 
           <img
@@ -433,6 +444,17 @@
   <!-- CLAIMS -->
 
   <div x-show="section==='claims'">
+
+    <!-- CLAIM SEARCH -->
+
+<div class="mb-6">
+
+  <input
+    x-model="claimSearch"
+    placeholder="Search claims by customer or product..."
+    class="w-full glass rounded-2xl p-4 bg-transparent text-white placeholder-gray-400">
+
+</div>
 
     <h2 class="text-3xl font-black mb-6">
       ✅ Manage Claims
@@ -799,6 +821,9 @@ function adminApp(){
     drawerOpen:false,
     section:'kits',
     claimFilter:'all',
+    
+    claimSearch:'',
+    productSearch:'',
 
     claims:[],
     products:[],
@@ -884,24 +909,74 @@ function adminApp(){
 
     },
 
-    filteredClaims(){
+   filteredClaims(){
 
-      if(this.claimFilter === 'pending'){
-        return this.pendingClaims();
-      }
+  let filtered = this.claims;
 
-      if(this.claimFilter === 'approved'){
-        return this.approvedClaims();
-      }
+  if(this.claimFilter !== 'all'){
 
-      if(this.claimFilter === 'rejected'){
-        return this.rejectedClaims();
-      }
+    filtered = filtered.filter(
+      c => c.status === this.claimFilter
+    );
 
-      return this.claims;
+  }
 
-    },
+  if(this.claimSearch){
 
+    filtered = filtered.filter(c =>
+
+      (c.customerName || '')
+      .toLowerCase()
+      .includes(this.claimSearch.toLowerCase())
+
+      ||
+
+      (c.productName || '')
+      .toLowerCase()
+      .includes(this.claimSearch.toLowerCase())
+
+      ||
+
+      (c.contact || '')
+      .toLowerCase()
+      .includes(this.claimSearch.toLowerCase())
+
+      ||
+
+      (c.phone || '')
+      .toLowerCase()
+      .includes(this.claimSearch.toLowerCase())
+
+    );
+
+  }
+
+  return filtered;
+
+},
+    
+   filteredProducts(){
+
+  if(!this.productSearch){
+    return this.products;
+  }
+
+  return this.products.filter(product =>
+
+    (product.name || '')
+    .toLowerCase()
+    .includes(this.productSearch.toLowerCase())
+
+    ||
+
+    (product.category || '')
+    .toLowerCase()
+    .includes(this.productSearch.toLowerCase())
+
+  );
+
+},
+    
     pendingClaims(){
       return this.claims.filter(c => c.status === 'pending');
     },
